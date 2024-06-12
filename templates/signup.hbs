@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="/signup.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.3/css/bootstrap.min.css">
+</head>
+<style>
+   .input-section {
+    margin-bottom: 20px; /* Adjust as needed */
+}
+
+.input-section select {
+    width: 100%;
+    padding: 10px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background-color: #fff;
+    transition: border-color 0.3s;
+}
+
+.input-section select:focus {
+    outline: none;
+    border-color: #007bff;
+}
+
+</style>
+
+<body>
+
+<!-- Error Modal -->
+<div class="modal fade" id="errorModal" tabindex="-1" aria-labelledby="errorModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="errorModalLabel">Error</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p style="color: red;" id="errorMessage">{{error}}</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Success Modal -->
+<div class="modal fade" id="successModal" tabindex="-1" aria-labelledby="successModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="successModalLabel">Success</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p style="color: green;" id="successMessage">{{success}}</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="back"></div>
+<div class="registration-form">
+    <header>
+        <h1>Sign Up</h1>
+        <p>Fill in all information</p>
+    </header>
+    <form id="signupForm" action='/signup' method="post">
+        <div class="input-section username-section">
+            <input class="username" type="text" placeholder="ENTER YOUR NAME HERE" name='name' autocomplete="off" required/>
+            <div class="animated-button"><span class="icon-paper-plane"><i class="fas fa-user"></i></span><span class="next-button username"><i class="fa fa-arrow-up"></i></span></div>
+        </div>
+        <div class="input-section email-section folded">
+            <input class="email" type="email" placeholder="ENTER YOUR EMAIL HERE" name="email" autocomplete="off" required/>
+            <div class="animated-button"><span class="icon-envelope"><i class="fas fa-envelope"></i></span><span class="next-button email"><i class="fa fa-arrow-up"></i></span></div>
+        </div>
+        <div class="input-section role-section folded">
+            <select class="role" name="role" required>
+                <option value="" selected disabled>Select</option>
+                <option value="user">User</option>
+                <option value="admin">Admin</option>
+            </select>
+            <div class="animated-button"><span class="icon-role"><i class="fas fa-user"></i></span><span class="next-button role"><i class="fa fa-arrow-up"></i></span></div>
+        </div>
+
+        <div class="input-section password-section folded">
+            <input class="password" type="password" placeholder="ENTER YOUR PASSWORD HERE" name='password' required/>
+            <div class="animated-button"><span class="icon-lock"><i class="fa fa-lock"></i></span><span class="next-button password"><i class="fa fa-arrow-up"></i></span></div>
+        </div>
+        <div class="input-section repeat-password-section folded">
+            <input class="repeat-password" type="password" placeholder="REPEAT YOUR PASSWORD HERE" name='rep_password' required/>
+            <div class="animated-button"><span class="icon-repeat-lock"><i class="fa fa-lock"></i></span><span class="next-button repeat-password"><i class="fa fa-paper-plane"></i></span></div>
+        </div>
+        
+        <div class="success"> 
+            <p>ACCOUNT CREATED</p>
+        </div>
+    </form>
+</div>
+
+<div class="login-section position-absolute w-100 text-center">
+    <p>Already a user? <a href="/signin">Login</a></p>
+</div>
+
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.3/js/bootstrap.bundle.min.js"></script>
+<script>
+    $(document).ready(function() {
+        // Show error modal if there is an error
+        const errorMessage = "{{error}}";
+        if (errorMessage) {
+            var errorModal = new bootstrap.Modal(document.getElementById('errorModal'));
+            errorModal.show();
+        }
+
+        // Show success modal if there is a success message
+        const successMessage = "{{success}}";
+        if (successMessage) {
+            var successModal = new bootstrap.Modal(document.getElementById('successModal'));
+            successModal.show();
+        }
+
+        $('.username').on("change keyup paste", function() {
+            if ($(this).val()) {
+                $('.icon-paper-plane').addClass("next");
+            } else {
+                $('.icon-paper-plane').removeClass("next");
+            }
+        });
+
+        $('.next-button').hover(function() {
+            $(this).css('cursor', 'pointer');
+        });
+
+        $('.next-button.username').click(function() {
+            $('.username-section').addClass("fold-up");
+            $('.email-section').removeClass("folded");
+        });
+        $('.email').on("change keyup paste", function() {
+            if ($(this).val()) {
+                $('.icon-envelope').addClass("next");
+            } else {
+                $('.icon-envelope').removeClass("next");
+            }
+        });
+
+            function updateRoleIcon() {
+            if ($('.role').val()) {
+                $('.icon-role').addClass("next");
+            } else {
+                $('.icon-role').removeClass("next");
+            }
+        }
+
+        // Call the function on page load
+        updateRoleIcon();
+
+        // Bind the change event to the role select
+        $('.role').on("change", function() {
+            updateRoleIcon();
+        });
+
+
+        $('.next-button.email').click(function() {
+            $('.email-section').addClass("fold-up");
+            $('.role-section').removeClass("folded");
+        });
+
+        $('.next-button.role').click(function() {
+            $('.role-section').addClass("fold-up");
+            $('.password-section').removeClass("folded");
+        });
+
+        $('.password').on("change keyup paste", function() {
+            if ($(this).val()) {
+                $('.icon-lock').addClass("next");
+            } else {
+                $('.icon-lock').removeClass("next");
+            }
+        });
+
+        $('.next-button.password').click(function() {
+            $('.password-section').addClass("fold-up");
+            $('.repeat-password-section').removeClass("folded");
+        });
+
+        $('.repeat-password').on("change keyup paste", function() {
+            if ($(this).val()) {
+                $('.icon-repeat-lock').addClass("next");
+            } else {
+                $('.icon-repeat-lock').removeClass("next");
+            }
+        });
+
+        $('.next-button.repeat-password').click(function() {
+            showConfirmationDialog();
+        });
+
+        function showConfirmationDialog() {
+            var username = $('.username').val();
+            var email = $('.email').val();
+            var role = $('.role').val();
+            var password = $('.password').val();
+            var repeatPassword = $('.repeat-password').val();
+
+            var userInfo = "username: " + username + "\nEmail: " + email + "\nRole: " + role +"\nPassword: " + password + "\nRepeat Password: " + repeatPassword;
+
+            if (password !== repeatPassword) {
+                alert("Passwords do not match!");
+                return;
+            }
+
+            if (confirm("Please review your information:\n\n" + userInfo + "\n\nAre you sure you want to proceed?")) {
+                $('.repeat-password-section').addClass("fold-up");
+                //$('.success').css("marginTop", 0).fadeIn();
+                $('#signupForm').submit();
+            } else {
+                $('#signupForm')[0].reset();
+                $('.username-section').removeClass("fold-up");
+                $('.email-section').addClass("folded").removeClass("fold-up");
+                $('.role-section').addClass("folded").removeClass("fold-up");
+                $('.password-section').addClass("folded").removeClass("fold-up");
+                $('.repeat-password-section').addClass("folded").removeClass("fold-up");
+                $('.icon-paper-plane').removeClass("next");
+                $('.icon-lock').removeClass("next");
+                $('.icon-repeat-lock').removeClass("next");
+            }
+        }
+    });
+</script>
+</body>
+</html>

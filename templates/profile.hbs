@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>User Profile</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <!-- Bootstrap 5 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body {
+      background: linear-gradient(90deg, #51d6d2, #81e8f6);
+      font-family: 'Roboto', sans-serif;
+      color: #333;
+    }
+
+    .profile-card {
+      background: linear-gradient(45deg, #00C9FF, #92FE9D);
+      border-radius: 10px;
+      box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.1);
+      padding: 20px;
+      color: #333;
+    }
+
+    .profile-photo {
+      width: 150px;
+      height: 150px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #43e695, #3bb2b8);
+      border-color: #3bb2b8;
+      color: #fff;
+    }
+
+    .btn-primary:hover {
+      background: linear-gradient(135deg, #3bb2b8, #43e695);
+      border-color: #3bb2b8;
+      color: #fff;
+    }
+
+    .btn-primary:focus, .btn-primary.focus {
+      background: linear-gradient(135deg, #3bb2b8, #43e695);
+      border-color: #3bb2b8;
+      color: #fff;
+      box-shadow: 0 0 0 0.25rem rgba(59, 178, 184, 0.5);
+    }
+    @media screen and (max-width: 770px) {
+      .back-button {
+        margin-bottom: 50px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Password Update Modal -->
+  <div class="modal fade" id="passwordUpdateModal" tabindex="-1" aria-labelledby="passwordUpdateModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="passwordUpdateModalLabel">Change Password</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form id="passwordUpdateForm">
+            <div class="mb-3">
+              <label for="currentPassword" class="form-label">Current Password:</label>
+              <input type="password" class="form-control" id="currentPassword" name="currentPassword" required>
+            </div>
+            <div class="mb-3">
+              <label for="newPassword" class="form-label">New Password:</label>
+              <input type="password" class="form-control" id="newPassword" name="newPassword" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Submit</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Profile Page -->
+  <div class="container py-5">
+    <button type="button" class="btn btn-light back-button" onclick="goBack()">Back</button>
+    <div class="row justify-content-center">
+      <div class="col-md-6">
+        <div class="profile-card">
+          <!-- Profile fields -->
+          <div class="mb-3">
+            <label for="name" class="form-label">Name:</label>
+            <input type="text" class="form-control" id="name" name="name" value="{{user.name}}" readonly>
+          </div>
+          <div class="mb-3">
+            <label for="email" class="form-label">Email:</label>
+            <input type="email" class="form-control" id="email" value="{{user.email}}" readonly>
+          </div>
+          <div class="mb-3">
+            <form id="phoneUpdateForm" action="/updatePhone/{{user.name}}" method="post">
+              <label for="phone" class="form-label">Phone Number:</label>
+              <div class="input-group">
+                <input type="tel" class="form-control" id="phone" name="phone" value="{{user.phone}}" readonly>
+                <button style="color:rgb(183, 50, 63);" class="btn btn-outline-secondary" type="button" id="editPhoneButton">Edit</button>
+              </div>
+            </form>
+          </div>
+          <div class="text-center">
+            <a href="/dataUser/{{user.name}}" class="btn btn-primary">View your data</a>
+            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#passwordUpdateModal">Change Password</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function goBack() {
+      window.location.href = '/user';
+    }
+
+    // JavaScript code to handle password update form submission
+    document.getElementById('passwordUpdateForm').addEventListener('submit', async (event) => {
+      event.preventDefault();
+
+      const currentPassword = document.getElementById('currentPassword').value;
+      const newPassword = document.getElementById('newPassword').value;
+
+      // Send a POST request to the backend to update the password
+      try {
+        const response = await fetch(`/updatePassword/{{user.name}}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ currentPassword, newPassword })
+        });
+        if (!response.ok) {
+          const errorMessage = await response.text();
+          alert(errorMessage);
+        } else {
+          alert('Password updated successfully');
+        }
+      } catch (error) {
+        console.error('Error updating password:', error);
+        alert('An error occurred while updating password');
+      }
+    });
+
+    // JavaScript code to handle phone number update
+    document.getElementById('editPhoneButton').addEventListener('click', async(event) => {
+      const phoneInput = document.getElementById('phone');
+      const editPhoneButton = document.getElementById('editPhoneButton');
+
+      if (phoneInput.readOnly) {
+        // Enable editing of phone number
+        phoneInput.readOnly = false;
+        phoneInput.focus();
+        editPhoneButton.textContent = 'Save'; // Change button text to 'Save'
+      } else {
+        // Disable editing of phone number and trigger form submission
+        phoneInput.readOnly = true;
+        editPhoneButton.textContent = 'Edit'; // Change button text back to 'Edit'
+        try {
+            const response = await fetch(`/updatePhone/{{user.name}}`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({ phone: phoneInput.value })
+            });
+            if (!response.ok) {
+              const errorMessage = await response.text();
+              alert(errorMessage);
+            } else {
+              alert('Phone number updated successfully');
+            }
+          } catch (error) {
+            console.error('Error updating phone number:', error);
+            alert('An error occurred while updating phone number');
+          }
+          event.preventDefault();
+        }
+      });
+  </script>
+
+  <!-- Bootstrap 5 JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

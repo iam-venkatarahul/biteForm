@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>user</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            padding-top: 56px; /* Adjust based on the navbar height */
+        }
+        .navbar-nav .nav-link {
+            padding: 0.5rem 1rem;
+            color: white !important;
+        }
+        .btn-custom {
+            background-color: #007bff;
+            border-color: #007bff;
+            color: white;
+        }
+        .btn-custom:hover {
+            background-color: #0056b3;
+            border-color: #004085;
+            color: white;
+        }
+        .btn-outline-custom {
+            color: #007bff;
+            border-color: #007bff;
+        }
+        .btn-outline-custom:hover {
+            color: white;
+            background-color: #007bff;
+        }
+        /* Add space between navbar buttons */
+        .navbar-nav .nav-item {
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-light fixed-top">
+        <a class="navbar-brand" href="#">Welcome back!</a>
+        <button class="navbar-toggler" type="button"  data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="btn btn-outline-custom btn-block" href="./signup">Sign up</a>
+                </li>
+                <li class="nav-item">
+                    <a class="btn btn-outline-custom btn-block" href="./signin">Sign In</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container-fluid d-flex justify-content-center align-items-center" style="background-image: url('https://cdn74.picsart.com/194149836001201.gif?to=min&r=640'); background-size: 100% 100%; background-position: center; height: 660px; margin-top: 10px;">
+        <div id="text-animation" style="text-align: center; color: rgba(255, 255, 255, 0.858); font-size: 48px; text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5); overflow: hidden; font-family:cursive">
+           
+        </div>
+    </div>
+    
+    <script>
+        // JavaScript to animate text
+        const textAnimation = document.getElementById('text-animation');
+        const text = "Hola... ^_^\n What's up?";
+        let index = 0;
+    
+        function animateText() {
+            if (index < text.length) {
+                textAnimation.innerHTML += text[index];
+                index++;
+                setTimeout(animateText, 100); // Adjust the delay between each letter (in milliseconds)
+            }
+        }
+    
+        animateText();
+    </script>
+    
+    <!-- Bootstrap JS and dependencies -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>

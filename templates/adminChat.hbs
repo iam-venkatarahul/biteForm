@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Chat</title>
+    <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/handlebars.js/4.7.7/handlebars.min.js"></script>
+    <style>
+        body {
+            margin-top: 20px;
+        }
+
+        .chat-container li.chat-admin .chat-text {
+            background-color: #e0e0e0;
+            color: #333;
+            border-radius: 10px;
+            padding: 10px;
+        }
+
+        .chat-container li.chat-admin .chat-hour {
+            justify-content: flex-end;
+        }
+
+        .users-container .users .person .user img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+        }
+
+        .users-container .users .person .status {
+            position: absolute;
+            top: 30%;
+            right: 10px;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background-color: green;
+        }
+
+        .users-container .users .person .status.busy {
+            background-color: red;
+        }
+
+        .users-container .users .person .status.offline {
+            background-color: gray;
+        }
+
+        .users-container .users .person {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            border-bottom: 1px solid #ccc;
+        }
+
+        .users-container .users .person .name-time {
+            margin-left: 10px;
+        }
+
+        .users-container .users .person .name-time .name {
+            font-weight: bold;
+        }
+
+        .chat-form {
+            padding: 7.6px;
+            width: 100%;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ffffff;
+            border-top: 1px solid white;
+        }
+
+        .chat-container {
+            height: calc(100vh - 150px);
+            overflow-y: scroll;
+            padding: 10px;
+            background: #f9f9f9;
+        }
+
+        .input-group button i.fa.fa-send {
+            font-size: 16px;
+        }
+
+        .input-group .form-control {
+            flex: 1;
+        }
+
+        #sendMessage {
+            width: 50px;
+        }
+
+        .chat-messages {
+            padding: 10px;
+            background: #f9f9f9;
+            height: calc(100vh - 150px);
+            overflow-y: scroll;
+        }
+
+        .chat-messages div {
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+
+        <!-- Page header start -->
+        <div class="page-title">
+            <div class="row">
+                <div class="col-xl-6 col-lg-6 col-md-6 col-sm-12 col-12">
+                    <h5 class="title">Admin Chat</h5>
+                </div>
+                <div class="col-xl-6 col-lg-6 col-md-6 col-sm-12 col-12"></div>
+            </div>
+        </div>
+        <!-- Page header end -->
+
+        <!-- Content wrapper start -->
+        <div class="content-wrapper">
+
+            <!-- Row start -->
+            <div class="row">
+
+                <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
+
+                    <div class="card m-0">
+
+                        <!-- Row start -->
+                        <div class="row g-0">
+
+                            <!-- Users container start -->
+                            <div class="col-xl-3 col-lg-4 col-md-4 col-sm-3 col-3 users-container">
+                                <div class="chat-search-box">
+                                    <div class="input-group">
+                                        <input class="form-control" placeholder="Search">
+                                        <button class="btn btn-outline-secondary" type="button"><i class="fa fa-search"></i></button>
+                                    </div>
+                                </div>
+                                <ul class="users list-group">
+                                    {{#each users}}
+                                    <li class="person list-group-item list-group-item-action" onclick="selectUser('{{this.name}}')" data-chat="{{this.id}}">
+                                        <div class="user">
+                                            <img src="https://static.vecteezy.com/system/resources/previews/021/548/095/original/default-profile-picture-avatar-user-avatar-icon-person-icon-head-icon-profile-picture-icons-default-anonymous-user-male-and-female-businessman-photo-placeholder-social-network-avatar-portrait-free-vector.jpg" alt="{{this.name}}">
+                                            <span class="status {{this.status}}"></span>
+                                        </div>
+                                        <p class="name-time">
+                                            <span class="name">{{this.name}}</span>
+                                            <span class="time">{{this.lastActive}}</span>
+                                        </p>
+                                    </li>
+                                    {{/each}}
+                                </ul>
+                            </div>
+                            <!-- Users container end -->
+
+                            <!-- Chat container start -->
+                            <div class="col-xl-9 col-lg-8 col-md-8 col-sm-9 col-9">
+                                <div style="margin-left: 8px;" class="selected-user">
+                                    <span>To: <span class="name">User</span></span>
+                                </div>
+                                <div class="chat-messages" id="chatMessages">
+                                    <!-- Chat messages here -->
+                                </div>
+                                <div class="form-group mt-3 mb-0 chat-form">
+                                    <div class="input-group">
+                                        <input id="messageInput" class="form-control" placeholder="Enter text here...">
+                                        <button id="sendMessage" class="btn btn-outline-secondary" type="button"><i class="fa fa-send"></i></button>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Chat container end -->
+                        </div>
+                        <!-- Row end -->
+                    </div>
+                </div>
+            </div>
+            <!-- Row end -->
+        </div>
+        <!-- Content wrapper end -->
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="https://cdn.socket.io/4.4.1/socket.io.min.js"></script>
+
+    <script>
+        const socket = io();
+        let selectedUser = null;
+
+        // Function to select a user
+        function selectUser(name) {
+            selectedUser = name;
+            document.querySelector('.selected-user .name').textContent = name;
+            loadMessages(name); // Load messages for the selected user
+        }
+
+        // Function to send a message
+        function sendMessage() {
+            const messageInput = document.getElementById('messageInput');
+            const message = messageInput.value.trim();
+
+            if (message !== '' && selectedUser) {
+                const messageObj = { sender: 'admin', recipient: selectedUser, content: message };
+
+                // Emit the message to the server
+                socket.emit('sendMessage', messageObj);
+
+                // Append the sent message to the chat window
+                const chatMessages = document.getElementById('chatMessages');
+                const messageElement = document.createElement('div');
+                messageElement.textContent = message;
+                messageElement.classList.add('chat-admin'); // Add class to distinguish admin messages
+                chatMessages.appendChild(messageElement);
+
+                // Scroll to the bottom of the chat window
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+
+                // Clear the message input field
+                messageInput.value = '';
+            }
+        }
+
+        // Function to load messages for the selected user
+        async function loadMessages(recipient) {
+            const response = await fetch(`/messages/${recipient}`);
+            const messages = await response.json();
+
+            const chatMessages = document.getElementById('chatMessages');
+            chatMessages.innerHTML = ''; // Clear current messages
+
+            messages.forEach(msg => {
+                const messageElement = document.createElement('div');
+                messageElement.textContent = msg.content;
+                messageElement.classList.add(msg.sender === 'admin' ? 'chat-admin' : 'chat-user');
+                chatMessages.appendChild(messageElement);
+            });
+
+            // Scroll to the bottom of the chat window
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        // Event listener for the send message button
+        document.getElementById('sendMessage').addEventListener('click', sendMessage);
+
+        // Event listener for pressing enter in the message input field
+        document.getElementById('messageInput').addEventListener('keypress', (event) => {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        });
+
+        // Socket event listener for receiving messages
+        socket.on('receiveMessage', (msg) => {
+            if (msg.sender === selectedUser || msg.recipient === selectedUser) {
+                // Append the received message to the chat window
+                const chatMessages = document.getElementById('chatMessages');
+                const messageElement = document.createElement('div');
+                messageElement.textContent = msg.content;
+                messageElement.classList.add('chat-user'); // Add class to distinguish user messages
+                chatMessages.appendChild(messageElement);
+
+                // Scroll to the bottom of the chat window
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
+        });
+
+        // Load initial messages for the first user in the list (if any)
+        window.onload = () => {
+            const firstUser = document.querySelector('.users .person');
+            if (firstUser) {
+                selectUser(firstUser.dataset.chat);
+            }
+        };
+    </script>
+</body>
+</html>
