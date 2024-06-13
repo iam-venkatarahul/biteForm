@@ -304,6 +304,7 @@ app.post('/signup', async (req, res) => {
         // Create the user
         await User.create({ name, email, password: hashedPassword, role , tab: { breakfast: [], lunch: [], supper: [] }});
         sendEmail("vedhavarshini.y111@gmail.com","New user registration",`A new user with name ${name} and email ${email} is registered!`)
+        sendEmail(email,"Registration successful",`Hello ${name}!\nThank you for registering for this account. \nWe are excited to have you join our community. \nYour registration has been successfully completed, and you can now enjoy all the features and benefits we offer.🎉🎉`)
 
         // Render success message
         res.render('signup', { success: 'Account created successfully!' });
@@ -565,7 +566,7 @@ app.post('/user', async (req, res) => {
         user.tab[tab].push(newFormEntry);
         await user.save();
 
-        sendEmail(user.email, "Submission status", `Your form for ${tab} is successfully submitted!\nThank you for taking time to fill out this form\nHave a great day`);
+        sendEmail(user.email, "Submission status", `Your form for ${tab} is successfully submitted!\nThank you for taking time to fill out this form\nHave a great day:)`);
         return res.render('user', { name, userData: JSON.stringify(user), feedbackForms: user.tab[tab], success: 'Form submitted successfully!' });
     } catch (error) {
         console.error('Error submitting form:', error);
