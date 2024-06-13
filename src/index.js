@@ -218,6 +218,7 @@ app.get('/user/:name', async (req, res) => {
       console.log(user)
       await user.save()
       res.status(200).send('Phone number updated successfully');
+      sendEmail(user.email,"Phone number update",`Hello ${user.name}\nYour phone number is updated to ${user.phone}successfully !\n`)
     } catch (error) {
       console.error('Error updating phone number:', error);
       res.status(500).send('Internal Server Error');
@@ -356,6 +357,10 @@ const isAuthenticated = (req, res, next) => {
     }
     next();
 };
+// Register a Handlebars helper for URL encoding
+hbs.registerHelper('urlEncode', function(value) {
+    return encodeURIComponent(value);
+});
 
 // Route to get user page
 app.get('/user', isAuthenticated, async (req, res) => {
@@ -603,8 +608,9 @@ const upload = multer({ storage: storage });
 
 app.post('/update-wallpaper/:name', upload.single('wallpaper'), async (req, res) => {
     try {
-        const username = req.session.userName;
-       // const username = req.params.name; // Extract username from URL parameter
+        //const username = req.session.userName;
+        const username = req.params.name; // Ensure it's properly encoded
+        //const username = decodeURIComponent(encodedName); // Decode if necessary
        // console.log('Received username:', username);
 
         const wallpaperPath = req.file.path; // Path of the uploaded wallpaper

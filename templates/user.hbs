@@ -184,7 +184,7 @@
 
     <nav class="navbar navbar-expand-lg navbar-light" style="background-color: #e3f2fd;">
         <div class="container-fluid">
-        <a class="btn btn-light"  href="/profile/{{name}}">Hey {{name}} !!!</a>
+        <a class="btn btn-light"  href="/profile/{{urlEncode name}}">Hey {{name}} !!!</a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
@@ -221,13 +221,13 @@
                 </div>
                 <div class="modal-body flex">
                     <!-- Form for updating wallpaper -->
-                    <form id="wallpaperForm" action="/update-wallpaper/{{name}}" method="post" enctype="multipart/form-data">
+                    <form id="wallpaperForm" action="/update-wallpaper/{{urlEncode name}}" method="post" enctype="multipart/form-data">
                         <input type="file" name="wallpaper" accept="image/*" required class="form-control">
                         <input type="text" name="name" value="{{name}}" readonly required class="form-control">
                         <button type="submit" class="btn btn-primary">Update Wallpaper</button>
                     </form>
                     <!-- Form for deleting wallpaper -->
-                    <form id="deleteWallpaperForm" action="/delete-wallpaper/{{name}}" method="post">
+                    <form id="deleteWallpaperForm" action="/delete-wallpaper/{{urlEncode name}}" method="post">
                         <input type="hidden" name="name" value="{{name}}">
                         <button type="submit" id="deletewallpaper" class="btn btn-danger">Delete Wallpaper</button>
                     </form>
@@ -328,7 +328,7 @@
         const timeRanges = [
             { tab: 'breakfast', start: [9, 0], end: [12, 0], disabled: false },
             { tab: 'lunch', start: [12, 30], end: [16, 0], disabled: false },
-            { tab: 'supper', start: [19, 0], end: [22, 0], disabled: false }
+            { tab: 'supper', start: [18, 0], end: [22, 0], disabled: false }
         ];
 
         for (let range of timeRanges) {
