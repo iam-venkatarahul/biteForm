@@ -213,6 +213,10 @@ app.post('/resetPassword',async(req,res)=>{
 
 // Route to get user profile data (for simplicity, using a fixed user)
 app.get('/user/:name', async (req, res) => {
+    const uname = req.session.userName;
+    if (!uname) {
+        return res.redirect('/signin');
+    }
     const name = req.params.name;
     const user = await User.findOne({ name });
     if (!user) {
@@ -361,8 +365,9 @@ const io = new Server(server);
 
 // Middleware to check if a user is authenticated
 const isAuthenticated = (req, res, next) => {
-    if (!req.session.userName) {
-        return res.status(401).send('Unauthorized');
+        const name = req.session.userName;
+    if (!name) {
+        return res.redirect('/signin');
     }
     next();
 };
@@ -370,6 +375,9 @@ const isAuthenticated = (req, res, next) => {
 // Route to get user page
 app.get('/user', isAuthenticated, async (req, res) => {
     const name = req.session.userName;
+    if (!name) {
+        return res.redirect('/signin');
+    }
     try {
         const user = await User.findOne({ name });
         if (!user) {
@@ -737,11 +745,19 @@ app.get('/admin', async (req, res) => {
 });
 
 app.get("/userChat",(req,res)=>{
+    const name = req.session.userName;
+    if (!name) {
+        return res.redirect('/signin');
+    }
     res.render('userChat')
 })
 
 
 app.get("/profile/:name", async (req, res) => {
+    const uname = req.session.userName;
+    if (!uname) {
+        return res.redirect('/signin');
+    }
     const name = req.params.name;
     if (!name) {
         return res.status(400).send('User name is required');
@@ -763,6 +779,10 @@ app.get("/profile/:name", async (req, res) => {
 
 // User route
 app.get('/dataUser/:name', async (req, res) => {
+    const uname = req.session.userName;
+    if (!uname) {
+        return res.redirect('/signin');
+    }
     const name = req.params.name; // Assuming the user's name is passed as a query parameter
     if (!name) {
         return res.status(400).send('User name is required');
