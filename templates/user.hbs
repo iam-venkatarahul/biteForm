@@ -453,9 +453,6 @@
             const cacheBuster = Math.random();
             // Set the background image dynamically using the received username and extension
             document.body.style.backgroundImage = `url('/uploads/${data.username}_wallpaper${data.fileExtension}?${cacheBuster}')`;
-            document.body.style.backgroundRepeat = 'no-repeat';
-            document.body.style.backgroundPosition = 'center';
-            document.body.style.backgroundSize = 'auto';
             // Save the wallpaper image URL in local storage with a unique key for each user
             localStorage.setItem(`wallpaperUrl_${data.username}`, `/uploads/${data.username}_wallpaper${data.fileExtension}`);
             window.location.href='user'
@@ -471,6 +468,9 @@
     const wallpaperUrl = localStorage.getItem(`wallpaperUrl_${username}`);
         if (wallpaperUrl) {
             document.body.style.backgroundImage = `url('${wallpaperUrl}')`;
+            document.body.style.backgroundRepeat = 'no-repeat';
+            document.body.style.backgroundPosition = 'center';
+            document.body.style.backgroundSize = 'contain';
         }
         else {
             document.body.classList.add('default-background');
