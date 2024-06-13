@@ -603,7 +603,8 @@ const upload = multer({ storage: storage });
 
 app.post('/update-wallpaper/:name', upload.single('wallpaper'), async (req, res) => {
     try {
-        const username = req.params.name; // Extract username from URL parameter
+        const username = req.session.userName;
+       // const username = req.params.name; // Extract username from URL parameter
        // console.log('Received username:', username);
 
         const wallpaperPath = req.file.path; // Path of the uploaded wallpaper
