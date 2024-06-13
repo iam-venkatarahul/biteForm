@@ -69,7 +69,10 @@
         }
            .nav-tabs .nav-link.active {
             background-color: #007bff;
-            color: white;
+            color: rgb(188, 126, 126);
+            text-align: center;
+        }
+        .nav-link .disabled{
             text-align: center;
         }
             .disabled {
@@ -450,7 +453,9 @@
             const cacheBuster = Math.random();
             // Set the background image dynamically using the received username and extension
             document.body.style.backgroundImage = `url('/uploads/${data.username}_wallpaper${data.fileExtension}?${cacheBuster}')`;
-
+            document.body.style.backgroundRepeat = 'no-repeat';
+            document.body.style.backgroundPosition = 'center';
+            document.body.style.backgroundSize = 'cover';
             // Save the wallpaper image URL in local storage with a unique key for each user
             localStorage.setItem(`wallpaperUrl_${data.username}`, `/uploads/${data.username}_wallpaper${data.fileExtension}`);
             window.location.href='user'

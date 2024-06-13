@@ -28,16 +28,16 @@ setInterval(async function() {
     if (now.hours() === 9 && now.minutes() === 0) {
             
             users.forEach(user => {
-                sendEmail(user.email, "Tab's Active", `Hello ${user} \nBreakfast tab is now active\nTap on the link below 👇 right now to submit the form\n`);
+                sendEmail(user.email, "Tab's Active", `Hello ${user} \nBreakfast tab is now active\nTap on the link below 👇 right now to submit the form\nhttps://form-i3hj.onrender.com/`);
                 console.log(`Email: ${user.email}`)
             });
     } else if (now.hours() === 12 && now.minutes() === 30) {
             users.forEach(user => {
-                sendEmail(user.email, "Tab's Active", `Hello ${user} \nLunch tab is now active\nTap on the link below 👇 right now to submit the form\n`);
+                sendEmail(user.email, "Tab's Active", `Hello ${user} \nLunch tab is now active\nTap on the link below 👇 right now to submit the form\nhttps://form-i3hj.onrender.com/`);
             });
     } else if (now.hours() === 19 && now.minutes() === 0) {
             users.forEach(user => {
-                sendEmail(user.email, "Tab's Active", `Hello ${user} \Supper tab is now active\nTap on the link below 👇 right now to submit the form\n`);
+                sendEmail(user.email, "Tab's Active", `Hello ${user} \Supper tab is now active\nTap on the link below 👇 right now to submit the form\nhttps://form-i3hj.onrender.com/`);
             });
     }
     const task = ()=>{
@@ -201,7 +201,7 @@ app.post('/resetPassword',async(req,res)=>{
     user.resetCode=undefined
     user.codeExpiryTime=undefined
     await user.save();
-    sendEmail(user.email,"Reset Password",`Hello ${user.name}! \nYour passowrd of your account with email: ${user.email} is successfully updated`)
+    sendEmail(user.email,"Password reset",`Hello ${user.name}! \nYour passowrd of your account with email: ${user.email} is successfully updated`)
     res.status(200).json({message: "Password updated successfully!"});
 
     }
@@ -262,7 +262,9 @@ app.get('/user/:name', async (req, res) => {
       user.password = hashedPassword;
       await user.save();
   
-      res.status(200).send('Password updated successfully');
+      
+      sendEmail(user.email,"Password update",`Hello ${user.name}! \nYour passowrd of your account with email: ${user.email} is successfully updated`)
+      res.status(200).render('signin', { message: 'Password updated successfully' });
     } catch (error) {
       console.error('Error updating password:', error);
       res.status(500).send('Internal Server Error');
