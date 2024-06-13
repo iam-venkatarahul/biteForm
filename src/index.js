@@ -4,6 +4,7 @@ const hbs = require('hbs');
 const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
 const session = require('express-session');
+const MongoStore = require('connect-mongo');
 const dotenv = require('dotenv');
 const {User,Message} = require('./mongodb');  // Updated import based on module.exports
 const moment = require('moment-timezone');
@@ -90,9 +91,13 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
 app.use(session({
+    store: MongoStore.create({
+        mongoUrl: 'mongodb+srv://vedhavarshiniy111:NkwsKNXYdpVzHsq9@people.vzfrxax.mongodb.net/project?retryWrites=true&w=majority&appName=People',
+        collectionName: 'sessions'
+      }),
     secret: 'jekskajdjsksksks',
     resave: false,
-    saveUninitialized: true,
+    saveUninitialized: false,
     cookie: { secure: false }
 }));
 
