@@ -11,6 +11,7 @@ const moment = require('moment-timezone');
 const multer = require('multer'); // Import multer for file upload
 const fs = require('fs');
 const methodOverride = require('method-override')
+const cron = require('node-cron');
 // index.js
 
 const { transporter, sendEmail } = require('./emailScheduler'); // Adjust the path as needed
@@ -19,68 +20,50 @@ const { transporter, sendEmail } = require('./emailScheduler'); // Adjust the pa
 dotenv.config();
 
 
-// Schedule sending emails
-setInterval(async function() {
+// Schedule email sending
+cron.schedule('57 9,12,19 * * *', async () => { // Runs at 9 AM, 12 PM, and 7 PM IST
     const now = moment().tz('Asia/Kolkata');
-    // console.log(now.hours(), now.minutes())
     const users = await User.find({ role: { $ne: 'admin' } });
-  //  console.log(users)
-    if (now.hours() === 9 && now.minutes() === 0) {
-            
-            users.forEach(user => {
-                sendEmail(user.email, "Tab's Active", `Hello ${user} \nBreakfast tab is now active\nTap on the link below 👇 right now to submit the form\nhttps://form-i3hj.onrender.com/`);
-                console.log(`Email: ${user.email}`)
-            });
-    } else if (now.hours() === 12 && now.minutes() === 30) {
-            users.forEach(user => {
-                sendEmail(user.email, "Tab's Active", `Hello ${user} \nLunch tab is now active\nTap on the link below 👇 right now to submit the form\nhttps://form-i3hj.onrender.com/`);
-            });
-    } else if (now.hours() === 19 && now.minutes() === 0) {
-            users.forEach(user => {
-                sendEmail(user.email, "Tab's Active", `Hello ${user} \Supper tab is now active\nTap on the link below 👇 right now to submit the form\nhttps://form-i3hj.onrender.com/`);
-            });
+
+    if (now.hours() === 9) {
+        users.forEach(user => {
+            sendEmail(user.email, "Tab's Active", `Hello ${user.name} \nBreakfast tab is now active\nTap on the link below 👇 right now to submit the form\nhttps://form-i3hj.onrender.com/`);
+        });
+    } else if (now.hours() === 12) {
+        users.forEach(user => {
+            sendEmail(user.email, "Tab's Active", `Hello ${user.name} \nLunch tab is now active\nTap on the link below 👇 right now to submit the form\nhttps://form-i3hj.onrender.com/`);
+        });
+    } else if (now.hours() === 19) {
+        users.forEach(user => {
+            sendEmail(user.email, "Tab's Active", `Hello ${user.name} \nSupper tab is now active\nTap on the link below 👇 right now to submit the form\nhttps://form-i3hj.onrender.com/`);
+        });
     }
-    const task = ()=>{
-        console.log("Running")
-    }
-}, 60000); 
-// Check every minute
+});
 
+// Schedule email reminders
+cron.schedule('45 11,15,21 * * *', async () => { // Runs at 11:45 AM, 3:45 PM, and 9:45 PM IST
+    const now = moment().tz('Asia/Kolkata');
+    const users = await User.find({ role: { $ne: 'admin' } });
 
-// Interval function to check submissions and send emails
-setInterval(async function() {
-    try {
-        const now = moment().tz('Asia/Kolkata');
-        const users = await User.find({ role: { $ne: 'admin' } });
+    for (const user of users) {
+        const hasSubmittedBreakfast = user.tab.breakfast.some(form => moment(form.timestamp).isSame(now, 'day'));
+        const hasSubmittedLunch = user.tab.lunch.some(form => moment(form.timestamp).isSame(now, 'day'));
+        const hasSubmittedSupper = user.tab.supper.some(form => moment(form.timestamp).isSame(now, 'day'));
 
-        // Check if it's time to send reminder emails
-        if ((now.hours() === 11 && now.minutes() === 45) ||  // 11:45 AM
-            (now.hours() === 15 && now.minutes() === 45) || // 3:45 PM
-            (now.hours() === 21 && now.minutes() === 45)) { // 9:45 PM
-                console.log('inside')
-            // Iterate through each user
-            for (const user of users) {
-                // Check if there are no submissions for breakfast, lunch, and supper
-                const hasSubmittedBreakfast = user.tab.breakfast.some(form => moment(form.timestamp).isSame(now, 'day'));
-                const hasSubmittedLunch = user.tab.lunch.some(form => moment(form.timestamp).isSame(now, 'day'));
-                const hasSubmittedSupper = user.tab.supper.some(form => moment(form.timestamp).isSame(now, 'day'));
-                // If no submissions, send reminder emails
-                if (!hasSubmittedBreakfast && now.hours() === 9 && now.minutes() === 45) {
-                    sendEmail(user.email, 'Reminder: Fill the breakfast form', `Hello ${user} \nDon\'t forget to fill the breakfast form for today!`);
-                }
-                if (!hasSubmittedLunch && now.hours() === 15 && now.minutes() === 45) {
-                    sendEmail(user.email, 'Reminder: Fill the lunch form', `Hello ${user} \nDon\'t forget to fill the lunch form for today!`);
-                }
-                if (!hasSubmittedSupper && now.hours() === 21 && now.minutes() === 45) {
-                    sendEmail(user.email, 'Reminder: Fill the supper form', `Hello ${user} \nDon\'t forget to fill the supper form for today!`);
-                }
-            }
+        if (!hasSubmittedBreakfast && now.hours() === 9 && now.minutes() === 45) {
+            sendEmail(user.email, 'Reminder: Fill the breakfast form', `Hello ${user.name} \nDon't forget to fill the breakfast form for today!`);
         }
-    } catch (error) {
-        console.error('Error checking submissions and sending emails:', error);
+        if (!hasSubmittedLunch && now.hours() === 15 && now.minutes() === 45) {
+            sendEmail(user.email, 'Reminder: Fill the lunch form', `Hello ${user.name} \nDon't forget to fill the lunch form for today!`);
+        }
+        if (!hasSubmittedSupper && now.hours() === 21 && now.minutes() === 45) {
+            sendEmail(user.email, 'Reminder: Fill the supper form', `Hello ${user.name} \nDon't forget to fill the supper form for today!`);
+        }
     }
-}, 60000); // Run every minute
+});
 
+// Log message to indicate the application is running
+console.log('Node.js application running with cron jobs...');
 const app = express();
 const templatePath = path.join(__dirname, '../templates');
 const uploadPath = path.join(__dirname, '../uploads');
