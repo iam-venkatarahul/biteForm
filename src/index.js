@@ -218,7 +218,7 @@ app.get('/user/:name', async (req, res) => {
       console.log(user)
       await user.save()
       res.status(200).send('Phone number updated successfully');
-      sendEmail(user.email,"Phone number update",`Hello ${user.name}\nYour phone number is updated to ${user.phone}successfully !\n`)
+      sendEmail(user.email,"Phone number update",`Hello ${user.name}\nYour phone number is updated to ${user.phone} successfully !\n`)
     } catch (error) {
       console.error('Error updating phone number:', error);
       res.status(500).send('Internal Server Error');
