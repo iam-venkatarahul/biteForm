@@ -21,7 +21,7 @@ dotenv.config();
 
 
 // Schedule email sending
-cron.schedule('57 9,12,19 * * *', async () => { // Runs at 9 AM, 12 PM, and 7 PM IST
+cron.schedule('0 9,12,19 * * *', async () => { // Runs at 9 AM, 12 PM, and 7 PM IST
     const now = moment().tz('Asia/Kolkata');
     const users = await User.find({ role: { $ne: 'admin' } });
 
@@ -572,113 +572,263 @@ app.post('/user', async (req, res) => {
     }
 });
 
-const storage = multer.diskStorage({
-    destination: function (req, file, cb) {
-        cb(null, uploadPath);
-    },
-    filename: function (req, file, cb) {
-        const username = req.params.name;
+// const storage = multer.diskStorage({
+//     destination: function (req, file, cb) {
+//         cb(null, uploadPath);
+//     },
+//     filename: function (req, file, cb) {
+//         const username = req.params.name;
         
-        // Delete previous images with different extensions
-        fs.readdir(uploadPath, (err, files) => {
-            if (err) {
-                console.error('Error reading directory:', err);
-                return cb(err);
-            }
+//         // Delete previous images with different extensions
+//         fs.readdir(uploadPath, (err, files) => {
+//             if (err) {
+//                 console.error('Error reading directory:', err);
+//                 return cb(err);
+//             }
 
-            files.forEach(file => {
-                if (file.startsWith(`${username}_wallpaper`) && file !== `${username}_wallpaper${path.extname(file)}`) {
-                    fs.unlink(path.join(uploadPath, file), err => {
-                        if (err) {
-                            console.error('Error deleting file:', err);
-                        }
-                    });
-                }
-            });
-        });
+//             files.forEach(file => {
+//                 if (file.startsWith(`${username}_wallpaper`) && file !== `${username}_wallpaper${path.extname(file)}`) {
+//                     fs.unlink(path.join(uploadPath, file), err => {
+//                         if (err) {
+//                             console.error('Error deleting file:', err);
+//                         }
+//                     });
+//                 }
+//             });
+//         });
 
-        const fileExtension = path.extname(file.originalname); // Get the file extension
-        const filename = `${username}_wallpaper${fileExtension}`; // Construct the filename
-        req.usernameWallpaper = filename; // Store the filename in request object
-        cb(null, filename);
-    }
+//         const fileExtension = path.extname(file.originalname); // Get the file extension
+//         const filename = `${username}_wallpaper${fileExtension}`; // Construct the filename
+//         req.usernameWallpaper = filename; // Store the filename in request object
+//         cb(null, filename);
+//     }
+// });
+
+// const upload = multer({ storage: storage });
+
+// app.post('/update-wallpaper/:name', upload.single('wallpaper'), async (req, res) => {
+//     try {
+//         //const username = req.session.userName;
+//         const username = req.params.name; // Ensure it's properly encoded
+//         //const username = decodeURIComponent(encodedName); // Decode if necessary
+//        // console.log('Received username:', username);
+
+//         const wallpaperPath = req.file.path; // Path of the uploaded wallpaper
+
+//         // Update the wallpaper path for the user in the database
+//         const updatedUser = await User.findOneAndUpdate(
+//             { name: username }, // Find user by username
+//             { wallpaper: wallpaperPath }, // Update wallpaper path
+//             { new: true } // Return updated document
+//         );
+
+//         //console.log('Updated user:', updatedUser);
+
+//         if (!updatedUser) {
+//             console.error('User not found:', username);
+//             return res.status(404).send('User not found');
+//         }
+
+//         //console.log('Wallpaper updated for user:', username);
+
+//         // Extract the file extension
+//         const fileExtension = path.extname(req.file.originalname);
+        
+//         // Send the username and the extension in the response
+//         res.json({ username, fileExtension });
+//     } catch (error) {
+//         console.error('Error uploading wallpaper:', error);
+//         return res.status(500).send('Internal Server Error');
+//     }
+// });
+
+// const fsExtra = require('fs-extra');
+// app.post('/delete-wallpaper/:name', async (req, res) => {
+//     const name = req.params.name;
+
+//     try {
+//         const user = await User.findOne({ name });
+//         if (user) {
+//             const wallpaperPath = user.wallpaper;
+//             console.log(wallpaperPath);
+
+//             const fileExtension = path.extname(wallpaperPath);
+//             // Remove the wallpaper path from the database
+//             user.wallpaper = undefined;
+//             await user.save();
+
+//             // Delete the wallpaper file
+//             fsExtra.remove(wallpaperPath)
+//                 .then(() => {
+//                     console.log('File deleted successfully');
+//                 })
+//                 .catch((err) => {
+//                     console.error('Error deleting file:', err);
+//                 });
+//                 //console.log(user.name,fileExtension)
+//                 res.json({ success: true, username: user.name, fileExtension: fileExtension }); // Return JSON response
+//         }
+        
+//     } catch (error) {
+//         console.error('Error deleting wallpaper:', error);
+//         res.status(500).json({ success: false, message: 'Internal Server Error' });
+//     }
+// });
+
+const { GridFsStorage } = require('multer-gridfs-storage');
+const mongoURI="mongodb+srv://vedhavarshiniy111:NkwsKNXYdpVzHsq9@people.vzfrxax.mongodb.net/project?retryWrites=true&w=majority&appName=People";
+// Connect to MongoDB
+mongoose.connect(mongoURI, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true
+  })
+  .then(() => {
+    console.log('MongoDB Grid fs connected');
+  })
+  .catch(err => {
+    console.error('MongoDB connection error:', err);
+    process.exit(1); // Exit process on connection failure
+  });
+  
+// Initialize GridFS
+let gfs;
+
+mongoose.connection.once('open', () => {
+  gfs = new mongoose.mongo.GridFSBucket(mongoose.connection.db, {
+    bucketName: 'wallpapers'
+  });
 });
 
-const upload = multer({ storage: storage });
-
+const storage = new GridFsStorage({
+    url: mongoURI,
+    file: async (req, file) => {
+      const username = req.params.name;
+      const fileExtension = path.extname(file.originalname);
+      const filename = `${username}_wallpaper${fileExtension}`;
+  
+      try {
+        // Check if a file with the same filename exists in GridFS
+        const existingFiles = await gfs.find({ filename: new RegExp(`^${username}_wallpaper`) }).toArray();
+        if(existingFiles){
+        for (const existingFile of existingFiles) {
+            await gfs.delete(existingFile._id);
+        }}
+      } catch (error) {
+        console.error('Error deleting existing files:', error);
+      }
+      console.log(filename);
+      return {
+        filename: filename,
+        
+        bucketName: 'wallpapers' // Store wallpapers in a separate collection
+      };
+    }
+  });
+  
+  const upload = multer({ storage });
+// POST endpoint to handle wallpaper upload
 app.post('/update-wallpaper/:name', upload.single('wallpaper'), async (req, res) => {
     try {
-        //const username = req.session.userName;
-        const username = req.params.name; // Ensure it's properly encoded
-        //const username = decodeURIComponent(encodedName); // Decode if necessary
-       // console.log('Received username:', username);
+      const username = req.params.name;
+      const fileExtension = path.extname(req.file.originalname);
+      const filename = `${username}_wallpaper${fileExtension}`;
+      const wallpaperPath = `/wallpapers/${filename}`; // Path accessible from the frontend
+    // Update the wallpaper path for the user in the database
+    const updatedUser = await User.findOneAndUpdate(
+        { name: username },
+        { wallpaper: wallpaperPath },
+        { new: true }
+    );
+    await updatedUser.save();
 
-        const wallpaperPath = req.file.path; // Path of the uploaded wallpaper
-
-        // Update the wallpaper path for the user in the database
-        const updatedUser = await User.findOneAndUpdate(
-            { name: username }, // Find user by username
-            { wallpaper: wallpaperPath }, // Update wallpaper path
-            { new: true } // Return updated document
-        );
-
-        //console.log('Updated user:', updatedUser);
-
-        if (!updatedUser) {
-            console.error('User not found:', username);
-            return res.status(404).send('User not found');
-        }
-
-        //console.log('Wallpaper updated for user:', username);
-
-        // Extract the file extension
-        const fileExtension = path.extname(req.file.originalname);
-        
-        // Send the username and the extension in the response
-        res.json({ username, fileExtension });
+   // console.log(updatedUser)
+      if (!updatedUser) {
+        return res.status(404).send('User not found');
+      }
+  
+      // Send response with username and fileExtension
+      res.json({ username, fileExtension });
     } catch (error) {
-        console.error('Error uploading wallpaper:', error);
-        return res.status(500).send('Internal Server Error');
+      console.error('Error uploading wallpaper:', error);
+      return res.status(500).send('Internal Server Error');
     }
-});
-
-const fsExtra = require('fs-extra');
-app.post('/delete-wallpaper/:name', async (req, res) => {
-    const name = req.params.name;
-
+  });
+  app.get('/wallpaper/:username', async (req, res) => {
+    const username = req.params.username;
+  
     try {
-        const user = await User.findOne({ name });
-        if (user) {
-            const wallpaperPath = user.wallpaper;
-            console.log(wallpaperPath);
+      const user = await User.findOne({ name: username });
+      if (!user) {
+        return res.status(404).json({ error: 'User not found' });
+      }
+      
+      // Check if user.wallpaper is valid
+    if (!user.wallpaper) {
+        return res.status(404).json({ error: 'Wallpaper not found' });
+      }
 
-            const fileExtension = path.extname(wallpaperPath);
-            // Remove the wallpaper path from the database
-            user.wallpaper = undefined;
-            await user.save();
-
-            // Delete the wallpaper file
-            fsExtra.remove(wallpaperPath)
-                .then(() => {
-                    console.log('File deleted successfully');
-                })
-                .catch((err) => {
-                    console.error('Error deleting file:', err);
-                });
-                //console.log(user.name,fileExtension)
-                res.json({ success: true, username: user.name, fileExtension: fileExtension }); // Return JSON response
-        }
-        
+      const filename = `${username}_wallpaper${path.extname(user.wallpaper)}`;
+      const files = await gfs.find({ filename }).toArray();
+      if (!files || files.length === 0) {
+        return res.status(404).json({ error: 'File not found' });
+      }
+  
+      const file = files[0];
+      const downloadStream = gfs.openDownloadStream(file._id);
+  
+      res.set('Content-Type', file.contentType);
+      downloadStream.pipe(res);
+    
     } catch (error) {
-        console.error('Error deleting wallpaper:', error);
-        res.status(500).json({ success: false, message: 'Internal Server Error' });
+      console.error('Error fetching wallpaper:', error);
+      return res.status(500).json({ error: 'Internal Server Error' });
     }
-});
+  });
 
+// Endpoint to handle wallpaper deletion
+app.post('/delete-wallpaper/:username', async (req, res) => {
+    const username = req.params.username;
+  
+    try {
+      // Find user in database
+      const user = await User.findOne({ name: username });
+      if (!user) {
+        return res.status(404).json({ error: 'User not found' });
+      }
+      
+      // Check if user.wallpaper is valid
+    if (!user.wallpaper) {
+        return res.status(404).json({ error: 'Wallpaper not found' });
+      }
+      
+      // Construct filename from user data
+      const filename = `${username}_wallpaper${path.extname(user.wallpaper)}`;
+      console.log(filename)
+      // Check if file exists in GridFS
+      const file = await gfs.find({ filename }).toArray();
+      if (!file || file.length === 0) {
+        return res.status(404).json({ error: 'File not found' });
+      }
+  
+      // Delete the file from GridFS
+      for (const fileObj of file) {
+        await gfs.delete(fileObj._id);
+      }
+  
+      // Remove wallpaper path from the user in the database
+      user.wallpaper = null;
+      await user.save();
+  
+      res.json({ success: true, username });
+    } catch (error) {
+      console.error('Error deleting wallpaper:', error);
+      return res.status(500).json({ error: 'Internal Server Error' });
+    }
+  });
 
 // Register Handlebars helper function to format date
 hbs.registerHelper('formatDate', function (timestamp) {
-    return moment(timestamp).tz('Asia/Kolkata').format('DD-MM-YYYY HH:mm:ss');
+    return moment(timestamp).tz('Asia/Kolkata').format('YYYY-MM-DD HH:mm:ss');
 });
 
 // Register Handlebars helper function for equality check
@@ -700,7 +850,7 @@ app.get('/admin', async (req, res) => {
         users.forEach(user => {
             ['breakfast', 'lunch', 'supper'].forEach(meal => {
                 user.tab[meal].forEach(entry => {
-                    allDates.add(moment(entry.timestamp).format('DD-MM-YYYY'));
+                    allDates.add(moment(entry.timestamp).format('YYYY-MM-DD'));
                 });
             });
         });
@@ -713,7 +863,7 @@ app.get('/admin', async (req, res) => {
         sortedDates.forEach(date => {
             groupedUsers[date] = users.map(user => {
                 const getEntriesForMeal = meal => {
-                    const entries = user.tab[meal].filter(entry => moment(entry.timestamp).format('DD-MM-YYYY') === date);
+                    const entries = user.tab[meal].filter(entry => moment(entry.timestamp).format('YYYY-MM-DD') === date);
                     return entries.length ? entries : [{ name: '', ate: '', reason: '', tablets: '', timestamp: '' }];
                 };
 
@@ -791,7 +941,7 @@ app.get('/dataUser/:name', async (req, res) => {
         const allDates = new Set();
         ['breakfast', 'lunch', 'supper'].forEach(meal => {
             user.tab[meal].forEach(entry => {
-                allDates.add(moment(entry.timestamp).format('DD-MM-YYYY'));
+                allDates.add(moment(entry.timestamp).format('YYYY-MM-DD'));
             });
         });
 
@@ -802,7 +952,7 @@ app.get('/dataUser/:name', async (req, res) => {
         const groupedUser = {};
         sortedDates.forEach(date => {
             const getEntriesForMeal = meal => {
-                const entries = user.tab[meal].filter(entry => moment(entry.timestamp).format('DD-MM-YYYY') === date);
+                const entries = user.tab[meal].filter(entry => moment(entry.timestamp).format('YYYY-MM-DD') === date);
                 return entries.length ? entries[0] : { name: '', ate: '', reason: '', tablets: '', timestamp: '' };
             };
 
