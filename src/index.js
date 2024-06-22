@@ -51,13 +51,13 @@ cron.schedule('45 11,15,21 * * *', async () => { // Runs at 11:45 AM, 3:45 PM, a
         const hasSubmittedSupper = user.tab.supper.some(form => moment(form.timestamp).isSame(now, 'day'));
 
         if (!hasSubmittedBreakfast && now.hours() === 9 && now.minutes() === 45) {
-            sendEmail(user.email, 'Reminder: Fill the breakfast form', `Hello ${user.name}\n\nDon't forget to fill the breakfast form for today!\n\nBest regards,\nThe Submit Mate Team`);
+            sendEmail(user.email, 'Reminder: Fill the breakfast form', `Hello ${user.name}\n\nDon't forget to fill the breakfast form for today!\n\nBest regards,\nThe SubmitMate Team`);
         }
         if (!hasSubmittedLunch && now.hours() === 15 && now.minutes() === 45) {
-            sendEmail(user.email, 'Reminder: Fill the lunch form', `Hello ${user.name}\n\nDon't forget to fill the lunch form for today!\n\nBest regards,\nThe Submit Mate Team`);
+            sendEmail(user.email, 'Reminder: Fill the lunch form', `Hello ${user.name}\n\nDon't forget to fill the lunch form for today!\n\nBest regards,\nThe SubmitMate Team`);
         }
         if (!hasSubmittedSupper && now.hours() === 21 && now.minutes() === 45) {
-            sendEmail(user.email, 'Reminder: Fill the supper form', `Hello ${user.name}\n\nDon't forget to fill the supper form for today!\n\nBest regards,\nThe Submit Mate Team`);
+            sendEmail(user.email, 'Reminder: Fill the supper form', `Hello ${user.name}\n\nDon't forget to fill the supper form for today!\n\nBest regards,\nThe SubmitMate Team`);
         }
     }
 });
@@ -130,7 +130,7 @@ app.post('/sendResetCode/:name', async (req, res) => {
       await user.save(); // Save the updated user document to the database
   
       // Send reset code/token to the provided email
-      sendEmail(email, "Password Reset Request for Your Submit Mate Account", `Hello ${name}, \n\nIt looks like you requested a password reset for your Submit Mate account. To reset your password, use the following code: \n\n${resetCode} \n\nThis code will expire in 5 minutes for security reasons. If you did not request a password reset, please ignore this email. If you need further assistance, contact our support team at vedhavarshini.y111@gmail.com.\n\nStay safe,\nThe Submit Mate Team`);
+      sendEmail(email, "Password Reset Request for Your SubmitMate Account", `Hello ${name}, \n\nIt looks like you requested a password reset for your SubmitMate account. To reset your password, use the following code: \n\n${resetCode} \n\nThis code will expire in 5 minutes for security reasons. If you did not request a password reset, please ignore this email. If you need further assistance, contact our support team at vedhavarshini.y111@gmail.com.\n\nStay safe,\nThe SubmitMate Team`);
   
       res.status(200).json({ message: 'Reset code sent successfully' });
     } catch (error) {
@@ -184,7 +184,7 @@ app.post('/resetPassword',async(req,res)=>{
     user.resetCode=undefined
     user.codeExpiryTime=undefined
     await user.save();
-    sendEmail(user.email,"Your Submit Mate Password Has Been Successfully Reset",`Hello ${user.name}, \n\nWe wanted to let you know that your password for your Submit Mate account associated with the email: ${user.email} has been successfully reset. You can now log in with your new password.\n\nIf you did not reset your password, please contact our support team immediately at vedhavarshini.y111@gmail.com to secure your account.\n\nThank you for using Submit Mate!\n\nBest regards,\nThe Submit Mate Team`)
+    sendEmail(user.email,"Your SubmitMate Password Has Been Successfully Reset",`Hello ${user.name}, \n\nWe wanted to let you know that your password for your SubmitMate account associated with the email: ${user.email} has been successfully reset. You can now log in with your new password.\n\nIf you did not reset your password, please contact our support team immediately at vedhavarshini.y111@gmail.com to secure your account.\n\nThank you for using SubmitMate!\n\nBest regards,\nThe SubmitMate Team`)
     res.status(200).json({message: "Password updated successfully!"});
 
     }
@@ -218,7 +218,7 @@ app.get('/user/:name', async (req, res) => {
       console.log(user)
       await user.save()
       res.status(200).send('Phone number updated successfully');
-      sendEmail(user.email,"Your Phone Number Has Been Successfully Updated",`Hello ${user.name},\n\nWe wanted to let you know that your phone number for your Submit Mate account has been successfully updated to ${user.phone}.\n\nIf you did not reset your password, please contact our support team immediately at vedhavarshini.y111@gmail.com to secure your account.\n\nThank you for using Submit Mate!\n\nBest regards,\nThe Submit Mate Team`)
+      sendEmail(user.email,"Your Phone Number Has Been Successfully Updated",`Hello ${user.name},\n\nWe wanted to let you know that your phone number for your SubmitMate account has been successfully updated to ${user.phone}.\n\nIf you did not reset your password, please contact our support team immediately at vedhavarshini.y111@gmail.com to secure your account.\n\nThank you for using SubmitMate!\n\nBest regards,\nThe SubmitMate Team`)
     } catch (error) {
       console.error('Error updating phone number:', error);
       res.status(500).send('Internal Server Error');
@@ -247,7 +247,7 @@ app.get('/user/:name', async (req, res) => {
       await user.save();
   
       
-      sendEmail(user.email,"Your Submit Mate Password Has Been Successfully Updated",`Hello ${user.name}! \n\nWe wanted to let you know that the password for your Submit Mate account associated with the email:  ${user.email} has been successfully updated.\n\nIf you did not reset your password, please contact our support team immediately at vedhavarshini.y111@gmail.com to secure your account.\n\nThank you for using Submit Mate!\n\nBest regards,\nThe Submit Mate Team`)
+      sendEmail(user.email,"Your SubmitMate Password Has Been Successfully Updated",`Hello ${user.name}! \n\nWe wanted to let you know that the password for your SubmitMate account associated with the email:  ${user.email} has been successfully updated.\n\nIf you did not reset your password, please contact our support team immediately at vedhavarshini.y111@gmail.com to secure your account.\n\nThank you for using SubmitMate!\n\nBest regards,\nThe SubmitMate Team`)
       res.status(200).render('signin', { message: 'Password updated successfully' });
     } catch (error) {
       console.error('Error updating password:', error);
@@ -564,7 +564,7 @@ app.post('/user', async (req, res) => {
         user.tab[tab].push(newFormEntry);
         await user.save();
 
-        sendEmail(user.email, "Submission status", `Hello ${user.name},\n\nYour form for ${tab} is successfully submitted!\n\nThank you for taking time to fill out this form\n\nHave a great day:)\nBest regards,\nThe Submit Mate Team`);
+        sendEmail(user.email, "Submission status", `Hello ${user.name},\n\nYour form for ${tab} is successfully submitted!\n\nThank you for taking time to fill out this form\n\nHave a great day:)\nBest regards,\nThe SubmitMate Team`);
         return res.render('user', { name, userData: JSON.stringify(user), feedbackForms: user.tab[tab], success: 'Form submitted successfully!' });
     } catch (error) {
         console.error('Error submitting form:', error);

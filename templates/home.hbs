@@ -9,6 +9,38 @@
         body {
             padding-top: 56px; /* Adjust based on the navbar height */
         }
+        .container-fluid{
+            background-image: url('/home.jpg');
+            background-size: 100% 100%;
+            background-position: center;
+            height: 660px; 
+            margin-top: 10px;
+        }
+        #text-animation{
+            text-align: center;
+            color: rgba(0, 0, 0, 0.858);
+            font-size: 48px; 
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            overflow: hidden; 
+            font-family: cursive;
+        }
+        @media screen and (max-width: 995px) {
+            .container-fluid{
+            background-image: url('/home_phone.jpg');
+            background-size: 100% 100%;
+            background-position: center;
+            height: 660px; 
+            margin-top: 10px;
+            }
+            #text-animation{   
+            text-align: center;
+            font-size: 48px; 
+           
+            overflow: hidden; 
+            font-family: cursive;
+            color: whitesmoke;
+            }
+        }
         .navbar-nav .nav-link {
             padding: 0.5rem 1rem;
             color: white !important;
@@ -56,8 +88,8 @@
         </div>
     </nav>
 
-    <div class="container-fluid d-flex justify-content-center align-items-center" style="background-image: url('/home.jpg'); background-size: 100% 100%; background-position: center; height: 660px; margin-top: 10px;">
-        <div id="text-animation" style="text-align: center; color: rgba(0, 0, 0, 0.858); font-size: 48px; text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5); overflow: hidden; font-family:cursive">
+    <div class="container-fluid d-flex justify-content-center align-items-center" style="">
+        <div id="text-animation" >
            
         </div>
     </div>
