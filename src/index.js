@@ -51,13 +51,13 @@ cron.schedule('45 11,15,21 * * *', async () => { // Runs at 11:45 AM, 3:45 PM, a
         const hasSubmittedSupper = user.tab.supper.some(form => moment(form.timestamp).isSame(now, 'day'));
 
         if (!hasSubmittedBreakfast && now.hours() === 9 && now.minutes() === 45) {
-            sendEmail(user.email, 'Reminder: Fill the breakfast form', `Hello ${user.name} \nDon't forget to fill the breakfast form for today!`);
+            sendEmail(user.email, 'Reminder: Fill the breakfast form', `Hello ${user.name}\n\nDon't forget to fill the breakfast form for today!\n\nBest regards,\nThe Submit Mate Team`);
         }
         if (!hasSubmittedLunch && now.hours() === 15 && now.minutes() === 45) {
-            sendEmail(user.email, 'Reminder: Fill the lunch form', `Hello ${user.name} \nDon't forget to fill the lunch form for today!`);
+            sendEmail(user.email, 'Reminder: Fill the lunch form', `Hello ${user.name}\n\nDon't forget to fill the lunch form for today!\n\nBest regards,\nThe Submit Mate Team`);
         }
         if (!hasSubmittedSupper && now.hours() === 21 && now.minutes() === 45) {
-            sendEmail(user.email, 'Reminder: Fill the supper form', `Hello ${user.name} \nDon't forget to fill the supper form for today!`);
+            sendEmail(user.email, 'Reminder: Fill the supper form', `Hello ${user.name}\n\nDon't forget to fill the supper form for today!\n\nBest regards,\nThe Submit Mate Team`);
         }
     }
 });
@@ -130,7 +130,7 @@ app.post('/sendResetCode/:name', async (req, res) => {
       await user.save(); // Save the updated user document to the database
   
       // Send reset code/token to the provided email
-      sendEmail(email, "Reset Code", `Hello ${name}!!! \nHere's your reset code \nReset code: ${resetCode} \nValid for 5 minutes\nReset your password with this reset code within 5 minutes`);
+      sendEmail(email, "Password Reset Request for Your Submit Mate Account", `Hello ${name}, \n\nIt looks like you requested a password reset for your Submit Mate account. To reset your password, use the following code: \n\n${resetCode} \n\nThis code will expire in 5 minutes for security reasons. If you did not request a password reset, please ignore this email. If you need further assistance, contact our support team at vedhavarshini.y111@gmail.com.\n\nStay safe,\nThe Submit Mate Team`);
   
       res.status(200).json({ message: 'Reset code sent successfully' });
     } catch (error) {
@@ -184,7 +184,7 @@ app.post('/resetPassword',async(req,res)=>{
     user.resetCode=undefined
     user.codeExpiryTime=undefined
     await user.save();
-    sendEmail(user.email,"Password reset",`Hello ${user.name}! \nYour passowrd of your account with email: ${user.email} is successfully updated`)
+    sendEmail(user.email,"Your Submit Mate Password Has Been Successfully Reset",`Hello ${user.name}, \n\nWe wanted to let you know that your password for your Submit Mate account associated with the email: ${user.email} has been successfully reset. You can now log in with your new password.\n\nIf you did not reset your password, please contact our support team immediately at vedhavarshini.y111@gmail.com to secure your account.\n\nThank you for using Submit Mate!\n\nBest regards,\nThe Submit Mate Team`)
     res.status(200).json({message: "Password updated successfully!"});
 
     }
@@ -218,7 +218,7 @@ app.get('/user/:name', async (req, res) => {
       console.log(user)
       await user.save()
       res.status(200).send('Phone number updated successfully');
-      sendEmail(user.email,"Phone number update",`Hello ${user.name}\nYour phone number is updated to ${user.phone} successfully !\n`)
+      sendEmail(user.email,"Your Phone Number Has Been Successfully Updated",`Hello ${user.name},\n\nWe wanted to let you know that your phone number for your Submit Mate account has been successfully updated to ${user.phone}.\n\nIf you did not reset your password, please contact our support team immediately at vedhavarshini.y111@gmail.com to secure your account.\n\nThank you for using Submit Mate!\n\nBest regards,\nThe Submit Mate Team`)
     } catch (error) {
       console.error('Error updating phone number:', error);
       res.status(500).send('Internal Server Error');
@@ -247,7 +247,7 @@ app.get('/user/:name', async (req, res) => {
       await user.save();
   
       
-      sendEmail(user.email,"Password update",`Hello ${user.name}! \nYour passowrd of your account with email: ${user.email} is successfully updated`)
+      sendEmail(user.email,"Your Submit Mate Password Has Been Successfully Updated",`Hello ${user.name}! \n\nWe wanted to let you know that the password for your Submit Mate account associated with the email:  ${user.email} has been successfully updated.\n\nIf you did not reset your password, please contact our support team immediately at vedhavarshini.y111@gmail.com to secure your account.\n\nThank you for using Submit Mate!\n\nBest regards,\nThe Submit Mate Team`)
       res.status(200).render('signin', { message: 'Password updated successfully' });
     } catch (error) {
       console.error('Error updating password:', error);
@@ -564,116 +564,13 @@ app.post('/user', async (req, res) => {
         user.tab[tab].push(newFormEntry);
         await user.save();
 
-        sendEmail(user.email, "Submission status", `Your form for ${tab} is successfully submitted!\nThank you for taking time to fill out this form\nHave a great day:)`);
+        sendEmail(user.email, "Submission status", `Hello ${user.name},\n\nYour form for ${tab} is successfully submitted!\n\nThank you for taking time to fill out this form\n\nHave a great day:)\nBest regards,\nThe Submit Mate Team`);
         return res.render('user', { name, userData: JSON.stringify(user), feedbackForms: user.tab[tab], success: 'Form submitted successfully!' });
     } catch (error) {
         console.error('Error submitting form:', error);
         return res.status(500).send('Internal Server Error');
     }
 });
-
-// const storage = multer.diskStorage({
-//     destination: function (req, file, cb) {
-//         cb(null, uploadPath);
-//     },
-//     filename: function (req, file, cb) {
-//         const username = req.params.name;
-        
-//         // Delete previous images with different extensions
-//         fs.readdir(uploadPath, (err, files) => {
-//             if (err) {
-//                 console.error('Error reading directory:', err);
-//                 return cb(err);
-//             }
-
-//             files.forEach(file => {
-//                 if (file.startsWith(`${username}_wallpaper`) && file !== `${username}_wallpaper${path.extname(file)}`) {
-//                     fs.unlink(path.join(uploadPath, file), err => {
-//                         if (err) {
-//                             console.error('Error deleting file:', err);
-//                         }
-//                     });
-//                 }
-//             });
-//         });
-
-//         const fileExtension = path.extname(file.originalname); // Get the file extension
-//         const filename = `${username}_wallpaper${fileExtension}`; // Construct the filename
-//         req.usernameWallpaper = filename; // Store the filename in request object
-//         cb(null, filename);
-//     }
-// });
-
-// const upload = multer({ storage: storage });
-
-// app.post('/update-wallpaper/:name', upload.single('wallpaper'), async (req, res) => {
-//     try {
-//         //const username = req.session.userName;
-//         const username = req.params.name; // Ensure it's properly encoded
-//         //const username = decodeURIComponent(encodedName); // Decode if necessary
-//        // console.log('Received username:', username);
-
-//         const wallpaperPath = req.file.path; // Path of the uploaded wallpaper
-
-//         // Update the wallpaper path for the user in the database
-//         const updatedUser = await User.findOneAndUpdate(
-//             { name: username }, // Find user by username
-//             { wallpaper: wallpaperPath }, // Update wallpaper path
-//             { new: true } // Return updated document
-//         );
-
-//         //console.log('Updated user:', updatedUser);
-
-//         if (!updatedUser) {
-//             console.error('User not found:', username);
-//             return res.status(404).send('User not found');
-//         }
-
-//         //console.log('Wallpaper updated for user:', username);
-
-//         // Extract the file extension
-//         const fileExtension = path.extname(req.file.originalname);
-        
-//         // Send the username and the extension in the response
-//         res.json({ username, fileExtension });
-//     } catch (error) {
-//         console.error('Error uploading wallpaper:', error);
-//         return res.status(500).send('Internal Server Error');
-//     }
-// });
-
-// const fsExtra = require('fs-extra');
-// app.post('/delete-wallpaper/:name', async (req, res) => {
-//     const name = req.params.name;
-
-//     try {
-//         const user = await User.findOne({ name });
-//         if (user) {
-//             const wallpaperPath = user.wallpaper;
-//             console.log(wallpaperPath);
-
-//             const fileExtension = path.extname(wallpaperPath);
-//             // Remove the wallpaper path from the database
-//             user.wallpaper = undefined;
-//             await user.save();
-
-//             // Delete the wallpaper file
-//             fsExtra.remove(wallpaperPath)
-//                 .then(() => {
-//                     console.log('File deleted successfully');
-//                 })
-//                 .catch((err) => {
-//                     console.error('Error deleting file:', err);
-//                 });
-//                 //console.log(user.name,fileExtension)
-//                 res.json({ success: true, username: user.name, fileExtension: fileExtension }); // Return JSON response
-//         }
-        
-//     } catch (error) {
-//         console.error('Error deleting wallpaper:', error);
-//         res.status(500).json({ success: false, message: 'Internal Server Error' });
-//     }
-// });
 
 const { GridFsStorage } = require('multer-gridfs-storage');
 const mongoURI="mongodb+srv://vedhavarshiniy111:NkwsKNXYdpVzHsq9@people.vzfrxax.mongodb.net/project?retryWrites=true&w=majority&appName=People";
