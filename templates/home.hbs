@@ -7,7 +7,8 @@
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <style>
         body {
-            padding-top: 56px; /* Adjust based on the navbar height */
+            padding-top: 46px; /* Adjust based on the navbar height */
+            overflow: hidden;
         }
         .container-fluid{
             background-image: url('/home.jpg');
@@ -25,9 +26,11 @@
             font-family: cursive;
         }
         @media screen and (max-width: 995px) {
+            body{
+                padding: 0px;
+            }
             .container-fluid{
             background-image: url('/home_phone.jpg');
-            background-size: 100% 100%;
             background-position: center;
             height: 100vh;
             }
