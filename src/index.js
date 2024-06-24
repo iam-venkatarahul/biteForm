@@ -19,25 +19,33 @@ const { transporter, sendEmail } = require('./emailScheduler'); // Adjust the pa
 
 dotenv.config();
 
+const formLink = "https://form-i3hj.onrender.com/";
 
 // Schedule email sending
-cron.schedule('0 9,12,19 * * *', async () => { // Runs at 9 AM, 12 PM, and 7 PM IST
+cron.schedule('14 9,13,19 * * *', async () => { // Runs at 9 AM, 12 PM, and 7 PM IST
     const now = moment().tz('Asia/Kolkata');
     const users = await User.find({ role: { $ne: 'admin' } });
 
-    if (now.hours() === 9) {
-        users.forEach(user => {
-            sendEmail(user.email, "Tab's Active", `Hello ${user.name} \nBreakfast tab is now active\nTap on the link below 👇 right now to submit the form\nhttps://form-i3hj.onrender.com/`);
-        });
-    } else if (now.hours() === 12) {
-        users.forEach(user => {
-            sendEmail(user.email, "Tab's Active", `Hello ${user.name} \nLunch tab is now active\nTap on the link below 👇 right now to submit the form\nhttps://form-i3hj.onrender.com/`);
-        });
-    } else if (now.hours() === 19) {
-        users.forEach(user => {
-            sendEmail(user.email, "Tab's Active", `Hello ${user.name} \nSupper tab is now active\nTap on the link below 👇 right now to submit the form\nhttps://form-i3hj.onrender.com/`);
-        });
-    }
+    users.forEach(user => {
+        let subject, text, html;
+
+        if (now.hours() === 9) {
+            subject = "Breakfast Tab Submission Now Open!";
+            text = `Hello ${user.name},\n\nWe're excited to announce that the Breakfast Tab is now active.`;
+            html = `<p>Hello ${user.name},</p><p>We're excited to announce that the Breakfast Tab is now active. Please click the link below to submit the form:</p><p><a href="${formLink}">Submit Form Now</a></p><p>Thank you!</p><p>Best regards,<br>The SubmitMate Team</p>`;
+        } else if (now.hours() === 13) {
+            subject = "Lunch Tab Submission Now Open!";
+            text = `Hello ${user.name},\n\nWe're excited to announce that the Lunch Tab is now active. Please click the link below to submit the form:\n${formLink}\n\nThank you!\n\nBest regards,\nThe SubmitMate Team`;
+            html = `<p>Hello ${user.name},</p><p>We're excited to announce that the Lunch Tab is now active. Please click the link below to submit the form:</p><p><a href="${formLink}">Submit Form Now</a></p><p>Thank you!</p><p>Best regards,<br>The SubmitMate Team</p>`;
+        } else if (now.hours() === 19) {
+            subject = "Supper Tab Submission Now Open!";
+            text = `Hello ${user.name},\n\nWe're excited to announce that the Supper Tab is now active. Please click the link below to submit the form:\n${formLink}\n\nThank you!\n\nBest regards,\nThe SubmitMate Team`;
+            html = `<p>Hello ${user.name},</p><p>We're excited to announce that the Supper Tab is now active. Please click the link below to submit the form:</p><p><a href="${formLink}">Submit Form Now</a></p><p>Thank you!</p><p>Best regards,<br>The SubmitMate Team</p>`;
+        }
+
+        // Send email with appropriate content (html or text)
+        sendEmail("vedayetchina@gmail.com", subject, text,html);
+    });
 });
 
 // Schedule email reminders
@@ -294,7 +302,7 @@ app.post('/signup', async (req, res) => {
         // Create the user
         await User.create({ name, email, password: hashedPassword, role , tab: { breakfast: [], lunch: [], supper: [] }});
         sendEmail("vedhavarshini.y111@gmail.com","New user registration",`A new user with name ${name} and email ${email} is registered!`)
-        sendEmail(email,"Registration successful",`Hello ${name}!\nThank you for registering for this account. \nWe are excited to have you join our community. \nYour registration has been successfully completed, and you can now enjoy all the features and benefits we offer.🎉🎉`)
+        sendEmail(email,"Registration successful",`Hello ${name},\nThank you for registering for this account. \n\nWe are excited to have you join our community. \nYour registration has been successfully completed, and you can now enjoy all the features and benefits we offer.🎉🎉\n\nBest regards,\nThe SubmitMate Team`)
 
         // Render success message
         res.render('signup', { success: 'Account created successfully!' });
@@ -564,7 +572,7 @@ app.post('/user', async (req, res) => {
         user.tab[tab].push(newFormEntry);
         await user.save();
 
-        sendEmail(user.email, "Submission status", `Hello ${user.name},\n\nYour form for ${tab} is successfully submitted!\n\nThank you for taking time to fill out this form\n\nHave a great day:)\nBest regards,\nThe SubmitMate Team`);
+        sendEmail(user.email, "Submission status", `Hello ${user.name},\n\nYour form for ${tab} is successfully submitted!\n\nThank you for taking time to fill out this form\n\nHave a great day:)\n\nBest regards,\nThe SubmitMate Team`);
         return res.render('user', { name, userData: JSON.stringify(user), feedbackForms: user.tab[tab], success: 'Form submitted successfully!' });
     } catch (error) {
         console.error('Error submitting form:', error);

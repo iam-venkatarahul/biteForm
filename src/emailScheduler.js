@@ -12,16 +12,26 @@ const transporter = nodemailer.createTransport({
         pass: 'nokq ldik olho ztpg'
     }
 });
-// Function to send email
-function sendEmail(receiver, subject, text) {
-    transporter.sendMail({
+// Function to send email with text and html options
+function sendEmail(receiver, subject, text, html) {
+    let mailOptions = {
         from: 'vedhavarshini.y111@gmail.com',
         to: receiver,
         subject: subject,
-        text: text
-    }, function(err, info) {
-        if (err) console.error('Error:', err);
-        else console.log('Email sent:', info.response);
+        text: text // Default to text content
+    };
+
+    // If html content is provided, include it in mailOptions
+    if (html) {
+        mailOptions.html = html;
+    }
+
+    transporter.sendMail(mailOptions, function(err, info) {
+        if (err) {
+            console.error('Error:', err);
+        } else {
+            console.log('Email sent:', info.response);
+        }
         console.log(`Sending email to ${receiver} with subject: ${subject}`);
     });
 }
