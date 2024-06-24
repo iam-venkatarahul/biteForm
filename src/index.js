@@ -22,7 +22,7 @@ dotenv.config();
 const formLink = "https://form-i3hj.onrender.com/";
 
 // Schedule email sending
-cron.schedule('14 9,13,19 * * *', async () => { // Runs at 9 AM, 12 PM, and 7 PM IST
+cron.schedule('0 9,13,19 * * *', async () => { // Runs at 9 AM, 12 PM, and 7 PM IST
     const now = moment().tz('Asia/Kolkata');
     const users = await User.find({ role: { $ne: 'admin' } });
 
@@ -31,16 +31,16 @@ cron.schedule('14 9,13,19 * * *', async () => { // Runs at 9 AM, 12 PM, and 7 PM
 
         if (now.hours() === 9) {
             subject = "Breakfast Tab Submission Now Open!";
-            text = `Hello ${user.name},\n\nWe're excited to announce that the Breakfast Tab is now active.`;
-            html = `<p>Hello ${user.name},</p><p>We're excited to announce that the Breakfast Tab is now active. Please click the link below to submit the form:</p><p><a href="${formLink}">Submit Form Now</a></p><p>Thank you!</p><p>Best regards,<br>The BiteForm Team</p>`;
-        } else if (now.hours() === 13) {
+            text = `Hello ${user.name},\n\nWe're pleased to announce that the Breakfast Tab is now active.`;
+            html = `<p>Hello ${user.name},</p><p>We're pleased to announce that the Breakfast Tab is now active. Please click the link below to submit the form:</p><p><a href="${formLink}">Submit Form Now</a></p><p>Thank you!</p><p>Best regards,<br>The BiteForm Team</p>`;
+        } else if (now.hours() === 12) {
             subject = "Lunch Tab Submission Now Open!";
-            text = `Hello ${user.name},\n\nWe're excited to announce that the Lunch Tab is now active. Please click the link below to submit the form:\n${formLink}\n\nThank you!\n\nBest regards,\nThe BiteForm Team`;
-            html = `<p>Hello ${user.name},</p><p>We're excited to announce that the Lunch Tab is now active. Please click the link below to submit the form:</p><p><a href="${formLink}">Submit Form Now</a></p><p>Thank you!</p><p>Best regards,<br>The BiteForm Team</p>`;
+            text = `Hello ${user.name},\n\nWe're here to announce that the Lunch Tab is now active. Please click the link below to submit the form:\n${formLink}\n\nThank you!\n\nBest regards,\nThe BiteForm Team`;
+            html = `<p>Hello ${user.name},</p><p>We're pleased to announce that the Lunch Tab is now active. Please click the link below to submit the form:</p><p><a href="${formLink}">Submit Form Now</a></p><p>Thank you!</p><p>Best regards,<br>The BiteForm Team</p>`;
         } else if (now.hours() === 19) {
             subject = "Supper Tab Submission Now Open!";
-            text = `Hello ${user.name},\n\nWe're excited to announce that the Supper Tab is now active. Please click the link below to submit the form:\n${formLink}\n\nThank you!\n\nBest regards,\nThe BiteForm Team`;
-            html = `<p>Hello ${user.name},</p><p>We're excited to announce that the Supper Tab is now active. Please click the link below to submit the form:</p><p><a href="${formLink}">Submit Form Now</a></p><p>Thank you!</p><p>Best regards,<br>The BiteForm Team</p>`;
+            text = `Hello ${user.name},\n\nWe're here to announce that the Supper Tab is now active. Please click the link below to submit the form:\n${formLink}\n\nThank you!\n\nBest regards,\nThe BiteForm Team`;
+            html = `<p>Hello ${user.name},</p><p>We're pleased to announce that the Supper Tab is now active. Please click the link below to submit the form:</p><p><a href="${formLink}">Submit Form Now</a></p><p>Thank you!</p><p>Best regards,<br>The BiteForm Team</p>`;
         }
 
         // Send email with appropriate content (html or text)
@@ -49,7 +49,7 @@ cron.schedule('14 9,13,19 * * *', async () => { // Runs at 9 AM, 12 PM, and 7 PM
 });
 
 // Schedule email reminders
-cron.schedule('45 11,15,21 * * *', async () => { // Runs at 11:45 AM, 3:45 PM, and 9:45 PM IST
+cron.schedule('45 11,15,21vs  * * *', async () => { // Runs at 11:45 AM, 3:45 PM, and 9:45 PM IST
     const now = moment().tz('Asia/Kolkata');
     const users = await User.find({ role: { $ne: 'admin' } });
 
@@ -83,7 +83,7 @@ app.use(express.urlencoded({ extended: false }));
 
 app.use(session({
     store: MongoStore.create({
-        mongoUrl: 'mongodb+srv://vedhavarshiniy111:NkwsKNXYdpVzHsq9@people.vzfrxax.mongodb.net/project?retryWrites=true&w=majority&appName=People',
+        mongoUrl: 'mongodb+srv://vedhavarshiniy111:NkwsKNXYdpVzHsq9@people.vzfrxax.mongodb.net/LINKEDIN?retryWrites=true&w=majority&appName=People',
         collectionName: 'sessions'
       }),
     secret: 'jekskajdjsksksks',
