@@ -44,7 +44,7 @@ cron.schedule('14 9,13,19 * * *', async () => { // Runs at 9 AM, 12 PM, and 7 PM
         }
 
         // Send email with appropriate content (html or text)
-        sendEmail("vedayetchina@gmail.com", subject, text,html);
+        sendEmail(user.email, subject, text,html);
     });
 });
 
