@@ -32,15 +32,15 @@ cron.schedule('14 9,13,19 * * *', async () => { // Runs at 9 AM, 12 PM, and 7 PM
         if (now.hours() === 9) {
             subject = "Breakfast Tab Submission Now Open!";
             text = `Hello ${user.name},\n\nWe're excited to announce that the Breakfast Tab is now active.`;
-            html = `<p>Hello ${user.name},</p><p>We're excited to announce that the Breakfast Tab is now active. Please click the link below to submit the form:</p><p><a href="${formLink}">Submit Form Now</a></p><p>Thank you!</p><p>Best regards,<br>The SubmitMate Team</p>`;
+            html = `<p>Hello ${user.name},</p><p>We're excited to announce that the Breakfast Tab is now active. Please click the link below to submit the form:</p><p><a href="${formLink}">Submit Form Now</a></p><p>Thank you!</p><p>Best regards,<br>The BiteForm Team</p>`;
         } else if (now.hours() === 13) {
             subject = "Lunch Tab Submission Now Open!";
-            text = `Hello ${user.name},\n\nWe're excited to announce that the Lunch Tab is now active. Please click the link below to submit the form:\n${formLink}\n\nThank you!\n\nBest regards,\nThe SubmitMate Team`;
-            html = `<p>Hello ${user.name},</p><p>We're excited to announce that the Lunch Tab is now active. Please click the link below to submit the form:</p><p><a href="${formLink}">Submit Form Now</a></p><p>Thank you!</p><p>Best regards,<br>The SubmitMate Team</p>`;
+            text = `Hello ${user.name},\n\nWe're excited to announce that the Lunch Tab is now active. Please click the link below to submit the form:\n${formLink}\n\nThank you!\n\nBest regards,\nThe BiteForm Team`;
+            html = `<p>Hello ${user.name},</p><p>We're excited to announce that the Lunch Tab is now active. Please click the link below to submit the form:</p><p><a href="${formLink}">Submit Form Now</a></p><p>Thank you!</p><p>Best regards,<br>The BiteForm Team</p>`;
         } else if (now.hours() === 19) {
             subject = "Supper Tab Submission Now Open!";
-            text = `Hello ${user.name},\n\nWe're excited to announce that the Supper Tab is now active. Please click the link below to submit the form:\n${formLink}\n\nThank you!\n\nBest regards,\nThe SubmitMate Team`;
-            html = `<p>Hello ${user.name},</p><p>We're excited to announce that the Supper Tab is now active. Please click the link below to submit the form:</p><p><a href="${formLink}">Submit Form Now</a></p><p>Thank you!</p><p>Best regards,<br>The SubmitMate Team</p>`;
+            text = `Hello ${user.name},\n\nWe're excited to announce that the Supper Tab is now active. Please click the link below to submit the form:\n${formLink}\n\nThank you!\n\nBest regards,\nThe BiteForm Team`;
+            html = `<p>Hello ${user.name},</p><p>We're excited to announce that the Supper Tab is now active. Please click the link below to submit the form:</p><p><a href="${formLink}">Submit Form Now</a></p><p>Thank you!</p><p>Best regards,<br>The BiteForm Team</p>`;
         }
 
         // Send email with appropriate content (html or text)
@@ -59,13 +59,13 @@ cron.schedule('45 11,15,21 * * *', async () => { // Runs at 11:45 AM, 3:45 PM, a
         const hasSubmittedSupper = user.tab.supper.some(form => moment(form.timestamp).isSame(now, 'day'));
 
         if (!hasSubmittedBreakfast && now.hours() === 9 && now.minutes() === 45) {
-            sendEmail(user.email, 'Reminder: Fill the breakfast form', `Hello ${user.name}\n\nDon't forget to fill the breakfast form for today!\n\nBest regards,\nThe SubmitMate Team`);
+            sendEmail(user.email, 'Reminder: Fill the breakfast form', `Hello ${user.name}\n\nDon't forget to fill the breakfast form for today!\n\nBest regards,\nThe BiteForm Team`);
         }
         if (!hasSubmittedLunch && now.hours() === 15 && now.minutes() === 45) {
-            sendEmail(user.email, 'Reminder: Fill the lunch form', `Hello ${user.name}\n\nDon't forget to fill the lunch form for today!\n\nBest regards,\nThe SubmitMate Team`);
+            sendEmail(user.email, 'Reminder: Fill the lunch form', `Hello ${user.name}\n\nDon't forget to fill the lunch form for today!\n\nBest regards,\nThe BiteForm Team`);
         }
         if (!hasSubmittedSupper && now.hours() === 21 && now.minutes() === 45) {
-            sendEmail(user.email, 'Reminder: Fill the supper form', `Hello ${user.name}\n\nDon't forget to fill the supper form for today!\n\nBest regards,\nThe SubmitMate Team`);
+            sendEmail(user.email, 'Reminder: Fill the supper form', `Hello ${user.name}\n\nDon't forget to fill the supper form for today!\n\nBest regards,\nThe BiteForm Team`);
         }
     }
 });
@@ -138,7 +138,7 @@ app.post('/sendResetCode/:name', async (req, res) => {
       await user.save(); // Save the updated user document to the database
   
       // Send reset code/token to the provided email
-      sendEmail(email, "Password Reset Request for Your SubmitMate Account", `Hello ${name}, \n\nIt looks like you requested a password reset for your SubmitMate account. To reset your password, use the following code: \n\n${resetCode} \n\nThis code will expire in 5 minutes for security reasons. If you did not request a password reset, please ignore this email. If you need further assistance, contact our support team at vedhavarshini.y111@gmail.com.\n\nStay safe,\nThe SubmitMate Team`);
+      sendEmail(email, "Password Reset Request for Your BiteForm Account", `Hello ${name}, \n\nIt looks like you requested a password reset for your BiteForm account. To reset your password, use the following code: \n\n${resetCode} \n\nThis code will expire in 5 minutes for security reasons. If you did not request a password reset, please ignore this email. If you need further assistance, contact our support team at vcareyou.biteform@gmail.com.\n\nStay safe,\nThe BiteForm Team`);
   
       res.status(200).json({ message: 'Reset code sent successfully' });
     } catch (error) {
@@ -192,7 +192,7 @@ app.post('/resetPassword',async(req,res)=>{
     user.resetCode=undefined
     user.codeExpiryTime=undefined
     await user.save();
-    sendEmail(user.email,"Your SubmitMate Password Has Been Successfully Reset",`Hello ${user.name}, \n\nWe wanted to let you know that your password for your SubmitMate account associated with the email: ${user.email} has been successfully reset. You can now log in with your new password.\n\nIf you did not reset your password, please contact our support team immediately at vedhavarshini.y111@gmail.com to secure your account.\n\nThank you for using SubmitMate!\n\nBest regards,\nThe SubmitMate Team`)
+    sendEmail(user.email,"Your BiteForm Password Has Been Successfully Reset",`Hello ${user.name}, \n\nWe wanted to let you know that your password for your BiteForm account associated with the email: ${user.email} has been successfully reset. You can now log in with your new password.\n\nIf you did not reset your password, please contact our support team immediately at vcareyou.biteform@gmail.com to secure your account.\n\nThank you for using BiteForm!\n\nBest regards,\nThe BiteForm Team`)
     res.status(200).json({message: "Password updated successfully!"});
 
     }
@@ -226,7 +226,7 @@ app.get('/user/:name', async (req, res) => {
       console.log(user)
       await user.save()
       res.status(200).send('Phone number updated successfully');
-      sendEmail(user.email,"Your Phone Number Has Been Successfully Updated",`Hello ${user.name},\n\nWe wanted to let you know that your phone number for your SubmitMate account has been successfully updated to ${user.phone}.\n\nIf you did not reset your password, please contact our support team immediately at vedhavarshini.y111@gmail.com to secure your account.\n\nThank you for using SubmitMate!\n\nBest regards,\nThe SubmitMate Team`)
+      sendEmail(user.email,"Your Phone Number Has Been Successfully Updated",`Hello ${user.name},\n\nWe wanted to let you know that your phone number for your BiteForm account has been successfully updated to ${user.phone}.\n\nIf you did not reset your password, please contact our support team immediately at vcareyou.biteform@gmail.com to secure your account.\n\nThank you for using BiteForm!\n\nBest regards,\nThe BiteForm Team`)
     } catch (error) {
       console.error('Error updating phone number:', error);
       res.status(500).send('Internal Server Error');
@@ -255,7 +255,7 @@ app.get('/user/:name', async (req, res) => {
       await user.save();
   
       
-      sendEmail(user.email,"Your SubmitMate Password Has Been Successfully Updated",`Hello ${user.name}! \n\nWe wanted to let you know that the password for your SubmitMate account associated with the email:  ${user.email} has been successfully updated.\n\nIf you did not reset your password, please contact our support team immediately at vedhavarshini.y111@gmail.com to secure your account.\n\nThank you for using SubmitMate!\n\nBest regards,\nThe SubmitMate Team`)
+      sendEmail(user.email,"Your BiteForm Password Has Been Successfully Updated",`Hello ${user.name}! \n\nWe wanted to let you know that the password for your BiteForm account associated with the email:  ${user.email} has been successfully updated.\n\nIf you did not reset your password, please contact our support team immediately at vcareyou.biteform@gmail.com to secure your account.\n\nThank you for using BiteForm!\n\nBest regards,\nThe BiteForm Team`)
       res.status(200).render('signin', { message: 'Password updated successfully' });
     } catch (error) {
       console.error('Error updating password:', error);
@@ -301,8 +301,8 @@ app.post('/signup', async (req, res) => {
     else{
         // Create the user
         await User.create({ name, email, password: hashedPassword, role , tab: { breakfast: [], lunch: [], supper: [] }});
-        sendEmail("vedhavarshini.y111@gmail.com","New user registration",`A new user with name ${name} and email ${email} is registered!`)
-        sendEmail(email,"Registration successful",`Hello ${name},\nThank you for registering for this account. \n\nWe are excited to have you join our community. \nYour registration has been successfully completed, and you can now enjoy all the features and benefits we offer.🎉🎉\n\nBest regards,\nThe SubmitMate Team`)
+        sendEmail("vcareyou.biteform@gmail.com","New user registration",`A new user with name ${name} and email ${email} is registered!`)
+        sendEmail(email,"Registration successful",`Hello ${name},\nThank you for registering for this account. \n\nWe are excited to have you join our community. \nYour registration has been successfully completed, and you can now enjoy all the features and benefits we offer.🎉🎉\n\nBest regards,\nThe BiteForm Team`)
 
         // Render success message
         res.render('signup', { success: 'Account created successfully!' });
@@ -572,7 +572,7 @@ app.post('/user', async (req, res) => {
         user.tab[tab].push(newFormEntry);
         await user.save();
 
-        sendEmail(user.email, "Submission status", `Hello ${user.name},\n\nYour form for ${tab} is successfully submitted!\n\nThank you for taking time to fill out this form\n\nHave a great day:)\n\nBest regards,\nThe SubmitMate Team`);
+        sendEmail(user.email, "Submission status", `Hello ${user.name},\n\nYour form for ${tab} is successfully submitted!\n\nThank you for taking time to fill out this form\n\nHave a great day:)\n\nBest regards,\nThe BiteForm Team`);
         return res.render('user', { name, userData: JSON.stringify(user), feedbackForms: user.tab[tab], success: 'Form submitted successfully!' });
     } catch (error) {
         console.error('Error submitting form:', error);
@@ -581,7 +581,7 @@ app.post('/user', async (req, res) => {
 });
 
 const { GridFsStorage } = require('multer-gridfs-storage');
-const mongoURI="mongodb+srv://vedhavarshiniy111:NkwsKNXYdpVzHsq9@people.vzfrxax.mongodb.net/project?retryWrites=true&w=majority&appName=People";
+const mongoURI="mongodb+srv://vedhavarshiniy111:NkwsKNXYdpVzHsq9@people.vzfrxax.mongodb.net/LINKEDIN?retryWrites=true&w=majority&appName=People";
 // Connect to MongoDB
 mongoose.connect(mongoURI, {
     useNewUrlParser: true,
@@ -600,7 +600,7 @@ let gfs;
 
 mongoose.connection.once('open', () => {
   gfs = new mongoose.mongo.GridFSBucket(mongoose.connection.db, {
-    bucketName: 'wallpapers'
+    bucketName: 'li_wallpapers'
   });
 });
 
@@ -625,7 +625,7 @@ const storage = new GridFsStorage({
       return {
         filename: filename,
         
-        bucketName: 'wallpapers' // Store wallpapers in a separate collection
+        bucketName: 'li_wallpapers' // Store wallpapers in a separate collection
       };
     }
   });
@@ -637,7 +637,7 @@ app.post('/update-wallpaper/:name', upload.single('wallpaper'), async (req, res)
       const username = req.params.name;
       const fileExtension = path.extname(req.file.originalname);
       const filename = `${username}_wallpaper${fileExtension}`;
-      const wallpaperPath = `/wallpapers/${filename}`; // Path accessible from the frontend
+      const wallpaperPath = `/li_wallpapers/${filename}`; // Path accessible from the frontend
     // Update the wallpaper path for the user in the database
     const updatedUser = await User.findOneAndUpdate(
         { name: username },

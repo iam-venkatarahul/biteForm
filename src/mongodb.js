@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-mongoose.connect('mongodb+srv://vedhavarshiniy111:NkwsKNXYdpVzHsq9@people.vzfrxax.mongodb.net/project?retryWrites=true&w=majority&appName=People')
+mongoose.connect('mongodb+srv://vedhavarshiniy111:NkwsKNXYdpVzHsq9@people.vzfrxax.mongodb.net/LINKEDIN?retryWrites=true&w=majority&appName=People')
     .then(() => {
         console.log("MongoDB connected");
     })
@@ -59,7 +59,7 @@ const userSchema = new mongoose.Schema({
     wallpaper: String
 });
 
-const User = mongoose.model('User', userSchema);
+const User = mongoose.model('linkedIn', userSchema);
 
 // Schema for messages
 const messageSchema = new mongoose.Schema({
@@ -70,7 +70,7 @@ const messageSchema = new mongoose.Schema({
 });
 
 // Model for messages
-const Message = mongoose.model('Message', messageSchema);
+const Message = mongoose.model('msg', messageSchema);
 
 
 module.exports = { User, Message };

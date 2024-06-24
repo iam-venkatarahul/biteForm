@@ -8,14 +8,14 @@ const transporter = nodemailer.createTransport({
     port: 587,
     secure: false,
     auth: {
-        user: 'vedhavarshini.y111@gmail.com',
-        pass: 'nokq ldik olho ztpg'
+        user: 'vcareyou.biteform@gmail.com',
+        pass: 'tqzb yedq gwsa ovdh'
     }
 });
 // Function to send email with text and html options
 function sendEmail(receiver, subject, text, html) {
     let mailOptions = {
-        from: 'vedhavarshini.y111@gmail.com',
+        from: 'vcareyou.biteform@gmail.com',
         to: receiver,
         subject: subject,
         text: text // Default to text content
