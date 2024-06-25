@@ -19,7 +19,7 @@ const { transporter, sendEmail } = require('./emailScheduler'); // Adjust the pa
 
 dotenv.config();
 
-const formLink = "https://form-i3hj.onrender.com/";
+const formLink = "https://biteform.onrender.com";
 
 // Schedule email sending
 cron.schedule('0 9,13,19 * * *', async () => { // Runs at 9 AM, 12 PM, and 7 PM IST
