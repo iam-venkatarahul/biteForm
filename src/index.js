@@ -302,7 +302,7 @@ app.post('/signup', async (req, res) => {
         // Create the user
         await User.create({ name, email, password: hashedPassword, role , tab: { breakfast: [], lunch: [], supper: [] }});
         sendEmail("vcareyou.biteform@gmail.com","New user registration",`A new user with name ${name} and email ${email} is registered!`)
-        sendEmail(email,"Registration successful",`Hello ${name},\nThank you for registering for this account. \n\nWe are excited to have you join our community. \nYour registration has been successfully completed, and you can now enjoy all the features and benefits we offer.🎉🎉\n\nBest regards,\nThe BiteForm Team`)
+        sendEmail(email,"Registration successful",`Hello ${name},\nThank you for registering for this account. \n\nWe are excited to have you join our community.Your registration has been successfully completed, and you can now enjoy all the features and benefits we offer.🎉🎉\n\nAdditionally, please note our meal timings for filling the forms:\n\n▪️Breakfast: 9 AM to 12 PM\n▪️Lunch: 12:30 PM to 4 PMn\nSupper: 7 PM to 11 PM\n\nYou can fill the form during these timings.\n\nBest regards,\nThe BiteForm Team`)
 
         // Render success message
         res.render('signup', { success: 'Account created successfully!' });
