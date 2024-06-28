@@ -542,7 +542,27 @@ app.post('/user', async (req, res) => {
             user.tab[tab] = [];
         }
 
-        // Check if the user has already submitted the form for the given tab
+        // Get the current time in IST
+        const currentTime = moment().tz('Asia/Kolkata');
+
+        // Define time ranges for each tab
+        const timeRanges = {
+            breakfast: { start: '09:00', end: '12:00' },
+            lunch: { start: '12:30', end: '16:00' },
+            supper: { start: '19:00', end: '22:00' },
+        };
+
+        // Check if the current time is within the allowed time range for the selected tab
+        const { start, end } = timeRanges[tab];
+        const startTime = moment.tz(start, 'HH:mm', 'Asia/Kolkata');
+        const endTime = moment.tz(end, 'HH:mm', 'Asia/Kolkata');
+
+        if (!currentTime.isBetween(startTime, endTime)) {
+            //return res.status(400).send(`Form for ${tab} can only be submitted between ${start} and ${end} IST`);
+            return res.render('user',{error:`Form for ${tab} can only be submitted between ${start} and ${end} IST`})
+        }
+
+        // Check if the user has already submitted the form for the given tab today
         const today = new Date().setHours(0, 0, 0, 0);
         const hasSubmittedFormToday = user.tab[tab].some(form => {
             return new Date(form.timestamp).setHours(0, 0, 0, 0) === today;
@@ -564,7 +584,7 @@ app.post('/user', async (req, res) => {
             ate,
             reason,
             tablets,
-            timestamp: moment().tz('Asia/Kolkata').format() // Store the timestamp in IST
+            timestamp: currentTime.format() // Store the timestamp in IST
         };
         console.log(newFormEntry);
 
@@ -572,7 +592,7 @@ app.post('/user', async (req, res) => {
         user.tab[tab].push(newFormEntry);
         await user.save();
 
-        sendEmail(user.email, "Submission status", `Hello ${user.name},\n\nYour form for ${tab} is successfully submitted!\n\nThank you for taking time to fill out this form\n\nHave a great day:)\n\nBest regards,\nThe BiteForm Team`);
+        sendEmail(user.email, "Submission status", `Hello ${user.name},\n\nYour form for ${tab} is successfully submitted!\n\nThank you for taking time to fill out this form\n\nHave a great day:)\n\nBest regards,\nThe SubmitMate Team`);
         return res.render('user', { name, userData: JSON.stringify(user), feedbackForms: user.tab[tab], success: 'Form submitted successfully!' });
     } catch (error) {
         console.error('Error submitting form:', error);
