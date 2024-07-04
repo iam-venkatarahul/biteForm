@@ -335,7 +335,9 @@ app.post('/signin', async (req, res) => {
         if (role === 'user') {
             return res.redirect('/user');
         } else if (role === 'admin') {
-            return res.redirect('/admin');
+            if (user.role !== 'admin') {
+                return res.render('signin', { error: 'Invalid details' });
+            }
         } else {
             return res.status(400).send('Invalid role');
         }
