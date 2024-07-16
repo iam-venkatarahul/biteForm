@@ -50,6 +50,7 @@ cron.schedule('0 9,13,19 * * *', async () => { // Runs at 9 AM, 12 PM, and 7 PM 
 
         // Send email with appropriate content (html or text)
         sendEmail(user.email, subject, text,html);
+        console.log("Tab active mail");
     });
 });
 
@@ -72,6 +73,7 @@ cron.schedule('45 11,15,21  * * *', async () => { // Runs at 11:45 AM, 3:45 PM, 
         if (!hasSubmittedSupper && now.hours() === 21 && now.minutes() === 45) {
             sendEmail(user.email, 'Reminder: Fill the supper form', `Hello ${user.name}\n\nDon't forget to fill the supper form for today!\n\nBest regards,\nThe BiteForm Team`);
         }
+        console.log("Reminder form email")
     }
 });
 
@@ -147,7 +149,7 @@ app.post('/sendResetCode/:name', async (req, res) => {
   
       // Send reset code/token to the provided email
       sendEmail(email, "Password Reset Request for Your BiteForm Account", `Hello ${name}, \n\nIt looks like you requested a password reset for your BiteForm account. To reset your password, use the following code: \n\n${resetCode} \n\nThis code will expire in 5 minutes for security reasons. If you did not request a password reset, please ignore this email. If you need further assistance, contact our support team at vcareyou.biteform@gmail.com.\n\nStay safe,\nThe BiteForm Team`);
-  
+      console.log("Reset pwd request email")
       res.status(200).json({ message: 'Reset code sent successfully' });
     } catch (error) {
       console.error('Error sending reset code:', error);
@@ -201,6 +203,7 @@ app.post('/resetPassword',async(req,res)=>{
     user.codeExpiryTime=undefined
     await user.save();
     sendEmail(user.email,"Your BiteForm Password Has Been Successfully Reset",`Hello ${user.name}, \n\nWe wanted to let you know that your password for your BiteForm account associated with the email: ${user.email} has been successfully reset. You can now log in with your new password.\n\nIf you did not reset your password, please contact our support team immediately at vcareyou.biteform@gmail.com to secure your account.\n\nThank you for using BiteForm!\n\nBest regards,\nThe BiteForm Team`)
+    console.log("Reset pwd email")
     res.status(200).json({message: "Password updated successfully!"});
 
     }
@@ -238,6 +241,7 @@ app.get('/user/:name', async (req, res) => {
       await user.save()
       res.status(200).send('Phone number updated successfully');
       sendEmail(user.email,"Your Phone Number Has Been Successfully Updated",`Hello ${user.name},\n\nWe wanted to let you know that your phone number for your BiteForm account has been successfully updated to ${user.phone}.\n\nIf you did not update your number, please contact our support team immediately at vcareyou.biteform@gmail.com to secure your account.\n\nThank you for using BiteForm!\n\nBest regards,\nThe BiteForm Team`)
+      console.log("Phone num email")
     } catch (error) {
       console.error('Error updating phone number:', error);
       res.status(500).send('Internal Server Error');
@@ -267,6 +271,7 @@ app.get('/user/:name', async (req, res) => {
   
       
       sendEmail(user.email,"Your BiteForm Password Has Been Successfully Updated",`Hello ${user.name}! \n\nWe wanted to let you know that the password for your BiteForm account associated with the email:  ${user.email} has been successfully updated.\n\nIf you did not reset your password, please contact our support team immediately at vcareyou.biteform@gmail.com to secure your account.\n\nThank you for using BiteForm!\n\nBest regards,\nThe BiteForm Team`)
+      console.log("Updated pwd email")
       res.status(200).render('signin', { message: 'Password updated successfully' });
     } catch (error) {
       console.error('Error updating password:', error);
@@ -314,7 +319,7 @@ app.post('/signup', async (req, res) => {
         await User.create({ name, email, password: hashedPassword, role , tab: { breakfast: [], lunch: [], supper: [] }});
         sendEmail("vcareyou.biteform@gmail.com","New user registration",`A new user with name ${name} and email ${email} is registered!`)
         sendEmail(email,"Registration successful",`Hello ${name},\nThank you for registering for this account. \n\nWe are excited to have you join our community.Your registration has been successfully completed, and you can now enjoy all the features and benefits we offer.🎉🎉\n\nAdditionally, please note our meal timings for filling the forms:\n\n▪️Breakfast: 9 AM to 12 PM\n▪️Lunch: 1 PM to 4 PM\n▪️Supper: 7 PM to 11 PM\n\nYou can fill the form during these timings.\n\nBest regards,\nThe BiteForm Team`)
-
+        console.log("Registration mail")
         // Render success message
         res.render('signup', { success: 'Account created successfully!' });
     }
@@ -559,6 +564,7 @@ app.post('/userForm', async (req, res) => {
         await user.save();
 
         sendEmail(user.email, "Submission status", `Hello ${user.name},\n\nYour form for ${tab} is successfully submitted!\n\nThank you for taking time to fill out this form\n\nHave a great day:)\n\nBest regards,\nThe SubmitMate Team`);
+        console.log("Submission status")
         return res.render('user', { name, userData: JSON.stringify(user), feedbackForms: user.tab[tab], success: 'Form submitted successfully!' });
     } catch (error) {
         console.error('Error submitting form:', error);
