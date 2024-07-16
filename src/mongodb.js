@@ -94,7 +94,7 @@ const userSchema = new mongoose.Schema({
 });
 
 // Create models
-const User = mongoose.model('User', userSchema);
+const User = mongoose.model('linkedIn', userSchema);
 const Message = mongoose.model('Message', messageSchema);
 
 module.exports = { User, Message };
