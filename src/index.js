@@ -1569,9 +1569,6 @@ app.get('/dataUser/:name', async (req, res) => {
 // });
 
 app.get('/logout', async (req, res) => {
-    if (!req.session.userName) {
-        return res.status(400).send('No user logged in.');
-    }
 
     const username = req.session.userName;
 
