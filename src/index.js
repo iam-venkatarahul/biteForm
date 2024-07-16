@@ -78,12 +78,12 @@ cron.schedule('45 11,15,21  * * *', async () => { // Runs at 11:45 AM, 3:45 PM, 
 // Log message to indicate the application is running
 console.log('Node.js application running with cron jobs...');
 const app = express();
-app.use(connectLivereload());
+
 const templatePath = path.join(__dirname, '../templates');
 const uploadPath = path.join(__dirname, '../uploads');
 
 const connectLivereload = require("connect-livereload");
-
+app.use(connectLivereload());
 app.use('/uploads', express.static(uploadPath)); 
 app.use(express.static(path.join(__dirname, '../public')));
 app.use(express.json());
