@@ -574,32 +574,41 @@
 
     // Helper function to format date
     function formatDate(dateStr) {
-     //   console.log("Date: ",dateStr);
-        if(dateStr===null)
-        {
-            return "";
-        }
-        const date = new Date(dateStr);
-       // console.log("Date: ",dateStr);
-        const today = new Date();
-        const yesterday = new Date(today);
-        yesterday.setDate(today.getDate() - 1);
-
-        const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-
-        if (date.toDateString() === today.toDateString()) {
-            return 'Today';
-        } else if (date.toDateString() === yesterday.toDateString()) {
-            return 'Yesterday';
-        } else if (date >= new Date(today.getFullYear(), today.getMonth(), today.getDate() - 7)) {
-            // For dates within the last 7 days
-            return daysOfWeek[date.getDay()];
-        } else {
-            // Format date as DD-MM-YYYY
-            return date.toLocaleDateString('en-GB');
-        }
+    if (dateStr === null) {
+        return "";
     }
+    const date = new Date(dateStr);
+    const today = new Date();
+    const yesterday = new Date(today);
+    yesterday.setDate(today.getDate() - 1);
 
+    // Convert all dates to UTC
+    const dateUTC = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+    const todayUTC = new Date(Date.UTC(today.getFullYear(), today.getMonth(), today.getDate()));
+    const yesterdayUTC = new Date(Date.UTC(yesterday.getFullYear(), yesterday.getMonth(), yesterday.getDate()));
+
+    console.log("Date: ", dateUTC.toDateString());
+    console.log("Today: ", todayUTC.toDateString());
+    console.log("Yesterday: ", yesterdayUTC.toDateString());
+
+    const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+
+    if (dateUTC.toDateString() === todayUTC.toDateString()) {
+        return new Date(dateStr).toLocaleTimeString('en-US', {
+            hour12: true,
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+    } else if (dateUTC.toDateString() === yesterdayUTC.toDateString()) {
+        return 'Yesterday';
+    } else if (date >= new Date(today.getFullYear(), today.getMonth(), today.getDate() - 7)) {
+        // For dates within the last 7 days
+        return daysOfWeek[date.getUTCDay()];
+    } else {
+        // Format date as DD-MM-YYYY
+        return date.toLocaleDateString('en-GB');
+    }
+}
     // Function to add a new date header to the chat messages
     function addDateHeader(chatMessages, dateStr) {
         const dateElement = document.createElement('div');

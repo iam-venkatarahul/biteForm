@@ -1370,37 +1370,43 @@ app.post("/tick", async (req, res) => {
     }
 });
 
-// Helper function to format date
 hbs.registerHelper('formatDate', function (dateStr) {
-    //console.log("Date: ",dateStr);
-    if(dateStr===null)
-    {
+    if (dateStr === null) {
         return "";
     }
     const date = new Date(dateStr);
-    //console.log("Date: ",dateStr);
     const today = new Date();
     const yesterday = new Date(today);
     yesterday.setDate(today.getDate() - 1);
 
+    // Convert all dates to UTC
+    const dateUTC = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+    const todayUTC = new Date(Date.UTC(today.getFullYear(), today.getMonth(), today.getDate()));
+    const yesterdayUTC = new Date(Date.UTC(yesterday.getFullYear(), yesterday.getMonth(), yesterday.getDate()));
+
+    console.log("Date: ", dateUTC.toDateString());
+    console.log("Today: ", todayUTC.toDateString());
+    console.log("Yesterday: ", yesterdayUTC.toDateString());
+
     const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
-    if (date.toDateString() === today.toDateString()) {
-        
-        return new Date(dateStr).toLocaleTimeString('en-US', { 
+    if (dateUTC.toDateString() === todayUTC.toDateString()) {
+        return new Date(dateStr).toLocaleTimeString('en-US', {
             hour12: true,
             hour: '2-digit',
-            minute: '2-digit'});;
-    } else if (date.toDateString() === yesterday.toDateString()) {
+            minute: '2-digit'
+        });
+    } else if (dateUTC.toDateString() === yesterdayUTC.toDateString()) {
         return 'Yesterday';
     } else if (date >= new Date(today.getFullYear(), today.getMonth(), today.getDate() - 7)) {
         // For dates within the last 7 days
-        return daysOfWeek[date.getDay()];
+        return daysOfWeek[date.getUTCDay()];
     } else {
         // Format date as DD-MM-YYYY
         return date.toLocaleDateString('en-GB');
     }
-})
+});
+
 
 app.get("/userChat/:name", async (req, res) => {
     const username = req.params.name;
