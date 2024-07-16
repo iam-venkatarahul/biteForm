@@ -1195,21 +1195,22 @@ app.get('/adminChat/:username', async (req, res) => {
     //console.log(username);
 
     try {
-        // Find the admin user
         const admin = await User.findOne({ name: username });
-       // console.log("admin: ", admin);
-        // const sname = req.session.userName;
-        // if (!sname)
-        // {
-        //     return res.redirect('/signin')
-        // }
-        // else if(sname !== admin)
-        // {
-        //     return res.redirect('/signin')
-        // }
+       console.log("admin: ", admin);
+        const sname = req.session.userName;
+        console.log(sname)
+        if (!sname)
+        {
+            return res.redirect('/signin')
+        }
+        else if(sname !== admin.name)
+        {
+            return res.redirect('/signin')
+        }
         if (!admin) {
             return res.status(404).send('Admin not found');
         }
+
 
         // Check if the user has admin role
         if (admin.role !== 'admin') {
