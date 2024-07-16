@@ -713,6 +713,7 @@
             console.log("Display: ",username,"ll",uname,"ll")
 
             const response = await fetch(`/userMessages/${uname}`);
+            console.log(response)
             const messages = await response.json();
 
             // Group messages by date

@@ -1077,17 +1077,17 @@ io.on('connection', async (socket) => {
 });
 app.get('/userMessages/:username', async (req, res) => {
     try {
-         const sname  = req.session.userName
-         const   username   = req.params.username;
+        const sname  = req.session.userName;
+         const   uname   = await User.findOne({role:"admin"})
          if(!sname){
              return res.redirect('/signin')
          }
-        else if(sname !== username)
+        else if(sname !== uname.name)
         {
             return res.redirect("/signin")
         }
        //console.log("Username: ",`${username}`)
-    
+        const username = req.params.username;
         // Check for exact match with potential trailing spaces
         const user = await User.findOne({ name: username });
 
@@ -1111,7 +1111,7 @@ app.get('/userMessages/:username', async (req, res) => {
             }
         // Find all messages where the sender is the specified user and recipient is 'Admin'
         const messages = await Message.find({ $or: [{ from: username, to: 'admin' }, { from: 'admin', to: username }] });
-        
+        console.log(messages,"msgs")
         const unreadMessages = await Message.find({to: "admin", read : "false"})
         console.log(unreadMessages)
         await Message.updateMany(
