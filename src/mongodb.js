@@ -8,15 +8,45 @@ mongoose.connect('mongodb+srv://vedhavarshiniy111:NkwsKNXYdpVzHsq9@people.vzfrxa
         console.error("Failed to connect!", err);
     });
 
-    
+ // Define Feedback schema
 const feedbackSchema = new mongoose.Schema({
     name: String,
     ate: String,
     reason: String,
     tablets: String,
-    timestamp: { type: String}
+    timestamp: { type: String }
 });
 
+// Define Message schema
+const messageSchema = new mongoose.Schema({
+    from: {
+        type: String, // Assuming 'username' is used as a unique identifier
+        ref: 'User',
+        required: true
+    },
+    to: {
+        type: String, // Assuming 'username' is used as a unique identifier
+        ref: 'User',
+        required: true
+    },
+    content: {
+        type: String,
+        required: true
+    },
+    timestamp: {
+        type: String
+    },
+    read: {
+        type: Boolean,
+        default: false // Default value is false (unread)
+    },
+    delivered:{
+        type: Boolean,
+        default: false
+    }
+});
+
+// Define User schema
 const userSchema = new mongoose.Schema({
     name: {
         type: String,
@@ -26,12 +56,12 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: false,
         unique: true
-      },
-      role: {
+    },
+    role: {
         type: String,
         required: true,
-        enum: ['admin', 'user'] 
-      },
+        enum: ['admin', 'user']
+    },
     password: {
         type: String,
         required: true
@@ -41,7 +71,7 @@ const userSchema = new mongoose.Schema({
         lunch: [feedbackSchema],
         supper: [feedbackSchema]
     },
-    phone:{
+    phone: {
         type: Number,
         required: false
     },
@@ -50,27 +80,21 @@ const userSchema = new mongoose.Schema({
         lunch: { disabled: Boolean, greenTab: Boolean, active: Boolean },
         supper: { disabled: Boolean, greenTab: Boolean, active: Boolean }
     },
-    resetCode:{
-        type:String
+    resetCode: {
+        type: String
     },
     codeExpiryTime: {
-        type:String
+        type: String
     },
-    wallpaper: String
+    wallpaper: String,
+    messages: [messageSchema], // Array of messages
+    lastLogin: Date,
+    lastLogout : Date,
+    avatar: String
 });
 
-const User = mongoose.model('linkedIn', userSchema);
-
-// Schema for messages
-const messageSchema = new mongoose.Schema({
-    sender: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-    recipient: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-    content: String,
-    timestamp: { type: Date, default: Date.now }
-});
-
-// Model for messages
-const Message = mongoose.model('msg', messageSchema);
-
+// Create models
+const User = mongoose.model('User', userSchema);
+const Message = mongoose.model('Message', messageSchema);
 
 module.exports = { User, Message };

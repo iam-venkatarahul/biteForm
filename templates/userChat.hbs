@@ -3,121 +3,772 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chat App</title>
+    <title>{{name}} Chat</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/mdb-ui-kit/3.2.0/mdb.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="styles.css">
-    <style>
-        #chat2 .form-control {
-            border-color: transparent;
+  <style>
+    body{
+        background-color: #FFDEE9;
+        background-image: linear-gradient(100deg, #FFDEE9 0%, #B5FFFC 100%);
+
+    }
+    #chat2 .form-control {
+        border-color: transparent;
+    }
+    #chat2 .form-control:focus {
+        border-color: transparent;
+        box-shadow: inset 0px 0px 0px 1px transparent;
+    }
+    .divider:after, .divider:before {
+        content: "";
+        flex: 1;
+        height: 1px;
+        background: #eee;
+    }
+    .card-body {
+        background-image: url("https://wallpapercave.com/wp/wp4410716.jpg");
+        display: flex;
+        flex-direction: column;
+        
+    }
+    .card-footer {
+        background-color: #f5f6f7;
+    }
+    .message-container {
+        margin-left: 2px;
+        max-width: 70%;
+        word-wrap: break-word;
+        /* Add the following properties to prevent overflow */
+        overflow-wrap: break-word;
+        word-break: break-word;
+        hyphens: auto; /* Optional: Enables hyphenation for better word breaking */
+    }
+
+    .date-container {
+        text-align: center;
+        margin: 3px 0;
+        position: sticky;
+        top: 0;
+        z-index: 1;
+    }
+
+    .date-header {
+        width: 90px;
+        display: inline-block;
+        padding: 5px;
+        background-color: #313131;
+        color: white;
+        border-radius: 5px;
+        z-index: 2;
+        font-size: smaller;
+    }
+
+   /* Admin message style */
+        .admin-message {
+            font-size: 14px;
+            background-color: #007bff; /* Blue color for user messages */
+            color: white;
+            align-self: flex-start; /* Align admin messages to the left */
+            border-radius:  0 10px 10px 10px ; /* Rounded corners */
+            max-width: 70%; /* Limit width to 70% of parent */
+            padding: 8px;
+            margin-bottom: 5px; /* Spacing between messages */
+            margin-left: 10px; /* Ensure margin on the left */
+            display: flex;
+            justify-content: space-between; /* Align content and timestamp within the message */
+            align-items: flex-end; /* Align items to the bottom of the message container */
         }
 
-        #chat2 .form-control:focus {
-            border-color: transparent;
-            box-shadow: inset 0px 0px 0px 1px transparent;
+        /* User message style */
+        .user-message {
+            font-weight: lighter;
+            font-size: 14px;
+            background-color: #e9ecef; /* Light gray background for admin messages */
+            color: black;
+            align-self: flex-end; /* Align user messages to the right */
+            border-radius: 10px 10px 0 10px; /* Rounded corners */
+            max-width: 70%; /* Limit width to 70% of parent */
+            padding: 8px;
+            margin-bottom: 5px; /* Spacing between messages */
+            margin-right: 10px; /* Ensure margin on the right */
+            display: flex;
+            justify-content: space-between; /* Align content and timestamp within the message */
+            align-items: flex-end; /* Align items to the bottom of the message container */
         }
 
-        .divider:after,
-        .divider:before {
-            content: "";
-            flex: 1;
-            height: 1px;
-            background: #eee;
+        /* Message content and timestamp alignment */
+        .message-content {
+            flex: 1; /* Take up remaining space */
+            padding: 5px;
         }
 
-        .card-body {
-            background-color: #fff;
+        /* Timestamp style */
+        .message-time {
+            font-size: 0.8em;
+            color: #555; /* Dark gray color for timestamp */
+            margin-left: 10px;
+            white-space: nowrap; /* Prevent timestamp from wrapping to the next line */
+            align-self: flex-end; /* Align timestamp to the bottom right */
+        }
+         #messageInput {
+            height: 30px;
+            resize: none;
+            max-height: 90px;
+            overflow-y: auto; /* Add scroll for long messages */
         }
 
-        .card-footer {
-            background-color: #f5f6f7;
+         .btn-chat {
+            text-align: center;
+            width: 300px;
+            font-size: 1.25rem;
+            padding: 10px 10px;
+            position: fixed;
+            border-radius: 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease-in-out;
+            margin-top: 30vh; /* Initial vertical centering */
+            /* Horizontal centering */
+            left: 40%;
+            transform: translateY(-10%);
+        }
+        @media screen and (max-width: 995px) {
+            .btn-chat {
+                text-align: center;
+                width: 300px;
+                font-size: 1.25rem;
+                padding: 10px 10px;
+                position: fixed;
+                border-radius: 10px;
+                background-color: #4CAF50;
+                color: white;
+                border: none;
+                cursor: pointer;
+                transition: all 0.3s ease-in-out;
+                margin-top: 30vh; /* Initial vertical centering */
+                /* Horizontal centering */
+                left: 13%;
+                transform: translateY(-10%);
+        }
+        }
+        .btn-chat:hover {
+            transform: scale(1.05);
+            background-color: #45a049;
+        }
+
+        .close-chat {
+            cursor: pointer;
+        }
+        .message-symbol {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+        }
+
+        .message-symbol i {
+            font-size: 1.5rem;
+        }
+        .unread-count {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            background-color: red;
+            color: white;
+            font-size: 0.75rem;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 20px;
+            position: absolute;
+            top: -5px;
+            right: -5px;
+        }
+         .back-button {
+            position: relative;
+            font-size: 2rem;
+            padding: 10px 20px;
+            background: none;
+            border: none;
+            color: black;
+            cursor: pointer;
+            transition: all 0.3s ease-in-out;
+            margin-top: 2vh; /* Adjust this value as needed */
+            left: 20px;
         }
     </style>
 </head>
 <body>
-<section style="background-color: #eee;">
-    <div class="container py-5">
-        <div class="row d-flex justify-content-center">
-            <div class="col-md-10 col-lg-8 col-xl-6">
-                <div class="card" id="chat2">
-                    <div class="card-header d-flex justify-content-between align-items-center p-3">
-                        <h5 class="mb-0">Chat</h5>
-                        <button type="button" class="btn btn-primary btn-sm" id="startChat">Chat with admin</button>
-                    </div>
-                    <div class="card-body" id="chatMessages" style="position: relative; height: 400px; overflow-y: scroll;">
-                        <!-- Chat messages will be appended here dynamically -->
-                    </div>
-                    <div class="card-footer text-muted d-flex justify-content-start align-items-center p-3">
-                        <img src="https://mdbcdn.b-cdn.net/img/Photos/new-templates/bootstrap-chat/ava3-bg.webp" alt="avatar 3" style="width: 40px; height: 100%;">
-                        <input type="text" class="form-control form-control-lg" id="messageInput" placeholder="Type message">
-                        <a class="ms-1 text-muted" href="#!" id="attachFile"><i class="fas fa-paperclip"></i></a>
-                        <a class="ms-3 text-muted" href="#!" id="sendEmoji"><i class="fas fa-smile"></i></a>
-                        <a class="ms-3" href="#!" id="sendMessage"><i class="fas fa-paper-plane"></i></a>
+    <button class="btn mt-5" id="backButton" onclick="showUserPage()" style="background: none; border: none; color: black;">
+        <img src="https://icon-library.com/images/back-button-icon/back-button-icon-17.jpg" alt="Back" style="width: 40px; height: auto; margin-left: 30vh;">
+    </button>
+
+   <div class="container pb-2 text-center">
+        
+        <button class="btn btn-chat" id="toggleChat">
+            Chat with Admin<span class="message-symbol ms-2"><i class="fas fa-comment-alt"></i><span class="unread-count">{{unreadCount}}</span></span>
+        </button>
+    </div>
+    <section>
+        <div class="container py-4">
+            <div class="row justify-content-center">
+                <div class="col-md-10 col-lg-8 col-xl-6">
+                    <div class="collapse" id="chatCollapse">
+                        <div class="card shadow-lg" id="chat2">
+                            <div class="card-header d-flex justify-content-between align-items-center p-3">
+                                <h5 class="mb-0">Chat with Admin</h5>
+                                <span class="close-chat" id="closeChat"><i class="fas fa-times"></i></span>
+                            </div>
+                            <div class="card-body" id="chatMessages" style="position: relative; height: 400px; overflow-y: scroll; padding: 0;">
+                                <!-- Chat messages will be appended here dynamically -->
+                            </div>
+                            <div class="card-footer text-muted d-flex justify-content-start align-items-center p-3">
+                                <img src="/avatar/{{urlEncode name}}" alt="avatar 3" 
+     onerror="this.onerror=null; this.src='https://mdbcdn.b-cdn.net/img/Photos/new-templates/bootstrap-chat/ava3-bg.webp';"  
+     style="width: 40px; height: 100%; border-radius: 50%;">
+
+                                <textarea class="form-control form-control-sm ms-3" style="font-size: 1rem; height: 30px;" id="messageInput" placeholder="Type message" rows="1"></textarea>
+                                <a class="ms-3" href="#!" id="sendMessageButton"><img src="https://img.icons8.com/?size=100&id=qmrjzD3EnDrv&format=png&color=000000" style="height: 40px;width:40px;"></a>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
-</section>
+    </section>
 <script src="https://cdn.socket.io/4.4.1/socket.io.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
 <script>
-    const socket = io();
-    const userName = "<%= name %>";
+    function showUserPage(){
+                console.log("user")
+                window.location.href='/user'
+            }
+    document.addEventListener('DOMContentLoaded', () => {
+            const toggleChatButton = document.getElementById('toggleChat');
+            const chatCollapse = new bootstrap.Collapse(document.getElementById('chatCollapse'), {
+                toggle: false // Prevents auto toggling on click
+            });
 
-    // Join user's own room
-    socket.emit('join', userName);
+            // Toggle chat button click event
+            toggleChatButton.addEventListener('click', function() {
+                chatCollapse.toggle();
+                toggleChatButton.style.display = 'none'; // Hide the button when chat opens
+                resetUnreadCount(); // Reset unread count when chat is opened
+                // Call function to display chat history when the page loads or as needed
+                displayUserChatHistory("{{name}}");
+                setTimeout(scrollToBottom, 0);
+            });
+
+            // Function to reset unread message count
+            function resetUnreadCount() {
+                const unreadCountSpan = document.querySelector('.unread-count');
+                if (unreadCountSpan) {
+                    unreadCountSpan.textContent = 0;
+                }
+            }
+            const chatMessages = document.getElementById('chatMessages');
+
+            // Function to scroll to the bottom of chat
+            function scrollToBottom() {
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
+
+            const unreadCountSpan = document.querySelector('.unread-count');
+            // Close chat button click event
+            const closeChatButton = document.getElementById('closeChat');
+            closeChatButton.addEventListener('click', function() {
+                chatCollapse.hide();
+                setTimeout(function() {
+                    toggleChatButton.style.display = 'block'; // Show the button after 5000 milliseconds (5 seconds)
+                }, 1000);
+                unreadCountSpan.textContent = 0;
+            });
+        
+    // Check if the browser supports notifications
+if ('Notification' in window) {
+    // Check the current permission status
+    if (Notification.permission !== 'granted') {
+        Notification.requestPermission().then(permission => {
+            if (permission === 'granted') {
+                console.log('Notification permission granted.');
+            } else {
+                console.log('Notification permission denied.');
+            }
+        });
+    }
+}
+
+  });
+    const socket = io({
+        query: {
+            userName: "{{name}}" // Replace with actual username or identifier
+        }
+    });
+    // Listen for adminLoggedIn event
+    socket.on('adminLoggedIn', () => {
+        displayUserChatHistory("{{name}}")
+        // Update UI to handle message delivery status change
+        console.log('Admin has logged in, update message delivery status');
+        // Implement logic to update UI based on the updated message statuses
+        // For example, remove unread badges or update message status indicators
+    });
+    // Handle 'AdminRead' event from the server
+socket.on('AdminRead', (name, unreadMessages) => {
+    // Iterate through unreadMessages
+    unreadMessages.forEach(msg => {
+        const dt = new Date(msg.timestamp);
+        const dtStr = dt.toLocaleString('en-US', { year: 'numeric', month: '2-digit', day: '2-digit' }).replace(/\//g, '-');
+
+        // Split todayStr by '-' to rearrange
+        let parts = dtStr.split('-');
+        let messageDate = parts[2] + '-' + parts[0] + '-' + parts[1];
+        // Select all date containers
+        const chatMessages = document.getElementById('chatMessages')
+        console.log(chatMessages)
+        const dateContainers = document.querySelectorAll('.date-container');
+          // Flag to indicate if we should start updating messages
+        let startUpdating = false;
+
+
+        // Iterate over each date container
+        dateContainers.forEach(dateContainer => {
+            // Get the date from data-date attribute
+            const dateStr = dateContainer.dataset.date;
+            //console.log(dateStr,messageDate )
+            // Check if the date matches the message date
+       
+            // Check if we should start updating messages
+            if (!startUpdating && dateStr === messageDate) {
+                startUpdating = true;
+            }
+
+            // If startUpdating is true, update messages in this date container
+            if (startUpdating) {
+                // Select message containers following this date container until the next date container
+                let nextElement = dateContainer.nextElementSibling;
+                while (nextElement && !nextElement.classList.contains('date-container')) {
+                    if (nextElement.classList.contains('message-container') && nextElement.classList.contains('user-message')) {
+                        // Find content and time elements within the message container
+                        const contentElement = nextElement.querySelector('.one');
+                        const timeElement = nextElement.querySelector('.message-time');
+
+                        // Validate content and time against received message
+                        if (contentElement && timeElement) {
+                            // Trim and compare content
+                            const decryptedContent = decryptMessage(msg.content).trim();
+                            const messageContent = contentElement.textContent.trim();
+                            if (decryptedContent === messageContent) {
+                                // Format message timestamp to match UI format
+                                const formattedTime = new Date(msg.timestamp).toLocaleTimeString('en-US', {
+                                        hour12: true,
+                                        hour: '2-digit',
+                                        minute: '2-digit'
+                                    });
+                                    console.log(formattedTime,timeElement.textContent.trim() )
+                                if(formattedTime === timeElement.textContent.trim()){
+                                    console.log(formattedTime,timeElement.textContent.trim() ,"ll")
+                                    console.log(decryptedContent,messageContent)
+                                // Update tick image source based on delivery and read status
+                                let tickImgSrc = '';
+                                
+                                    tickImgSrc ="https://img.icons8.com/?size=100&id=41638&format=png&color=000000" // Delivered and read
+                                // Update message delivery status in UI
+                                const tickElement = timeElement.querySelector('img');
+                                if (tickElement) {
+                                    tickElement.src = tickImgSrc;
+                                }
+                            }
+                            
+                        }
+                        }
+                    }
+                    // Move to the next sibling element
+                    nextElement = nextElement.nextElementSibling;
+                }
+            }
+        });
+    });
+});
+
+    // Encryption function
+    function encryptMessage(message) {
+        const encryptionKey = 'd916ffebd9a2f453e288cb201037592ccb58c1ba9a40b12b3dbe79e05d232a7d';
+        return CryptoJS.AES.encrypt(message, encryptionKey).toString();
+    }
+
+    // Decryption function
+    function decryptMessage(encryptedContent) {
+        const decryptionKey = 'd916ffebd9a2f453e288cb201037592ccb58c1ba9a40b12b3dbe79e05d232a7d';
+        const bytes = CryptoJS.AES.decrypt(encryptedContent, decryptionKey);
+        return bytes.toString(CryptoJS.enc.Utf8);
+    }
 
     // Function to send a message
-    function sendMessage() {
+    async function sendMessage() {
         const messageInput = document.getElementById('messageInput');
         const message = messageInput.value.trim();
+        const sender = "{{name}}"; // Replace with actual sender information (e.g., username)
+        const recipient = 'admin'; // Replace with actual recipient information
+        // Get current date and time
+                        const now = new Date();
 
+                        // Format date and time components
+                        const year = now.getFullYear();
+                        const month = String(now.getMonth() + 1).padStart(2, '0'); // Month is zero-indexed
+                        const day = String(now.getDate()).padStart(2, '0');
+                        const hours = String(now.getHours()).padStart(2, '0');
+                        const minutes = String(now.getMinutes()).padStart(2, '0');
+                        const seconds = String(now.getSeconds()).padStart(2, '0');
+
+                        // Construct timestamp in desired format
+                        const timestamp = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+                        console.log(timestamp);
         if (message !== '') {
-            const messageObj = { sender: userName, recipient: 'admin', content: message };
+            const encryptedContent = encryptMessage(message);
+            const messageObj = {
+                sender,
+                recipient,
+                content: encryptedContent,
+                timestamp: timestamp
+            };
 
-            // Emit the message to the server
-            socket.emit('sendMessage', messageObj);
+            try {
+                // Make a POST request to the sendMessage API
+                const response = await fetch('/sendMessage', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(messageObj)
+                });
 
-            // Append the sent message to the chat window
-            const chatMessages = document.getElementById('chatMessages');
-            const messageElement = document.createElement('div');
-            messageElement.textContent = message;
-            messageElement.classList.add('user-message'); // Add class to distinguish user messages
-            chatMessages.appendChild(messageElement);
+                if (response.ok) {
+                    // Clear the message input field
+                    messageInput.value = '';
+                    
+                    // Emit the message to the server via Socket.IO
+                    socket.emit('sendMessage', messageObj);
 
-            // Scroll to the bottom of the chat window
-            chatMessages.scrollTop = chatMessages.scrollHeight;
+                        // Fetch delivery and read status from the backend
+                        const tickImgSrc = await updateMessageStatus(encryptedContent, sender,recipient, timestamp);
 
-            // Clear the message input field
-            messageInput.value = '';
+                        // Append sent message to chat box on the right side
+                        appendMessageToChatBox(message,  recipient,'right',tickImgSrc);
+                        resizeTextarea()
+                } else {
+                    console.error('Failed to send message:', response.statusText);
+                }
+            } catch (error) {
+                console.error('Error sending message:', error);
+            }
         }
     }
 
     // Event listener for the send message button
-    document.getElementById('sendMessage').addEventListener('click', sendMessage);
+    document.getElementById('sendMessageButton').addEventListener('click', sendMessage);
 
-    // Event listener for pressing enter in the message input field
-    document.getElementById('messageInput').addEventListener('keypress', (event) => {
-        if (event.key === 'Enter') {
-            sendMessage();
+           const messageInput = document.getElementById('messageInput');
+
+        // Function to resize textarea based on content
+        function resizeTextarea() {
+            messageInput.style.height = "30px";
+            messageInput.style.height = `${Math.min(messageInput.scrollHeight, 90)}px`;
         }
-    });
 
-    // Socket event listener for receiving messages
-    socket.on('receiveMessage', (msg) => {
-        // Append the received message to the chat window
+        // Event listener for input changes (typing)
+        messageInput.addEventListener('input', resizeTextarea);
+
+        // Event listener for Enter key press
+        messageInput.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault();
+                sendMessage();
+            }
+        });
+
+ // Helper function to format date
+function formatDate(dateStr) {
+    const date = new Date(dateStr);
+    const today = new Date();
+    const yesterday = new Date(today);
+    yesterday.setDate(today.getDate() - 1);
+
+    const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+
+    if (date.toDateString() === today.toDateString()) {
+        return 'Today';
+    } else if (date.toDateString() === yesterday.toDateString()) {
+        return 'Yesterday';
+    } else if (date >= new Date(today.getFullYear(), today.getMonth(), today.getDate() - 7)) {
+        // For dates within the last 7 days
+        return daysOfWeek[date.getDay()];
+    } else {
+        // Format date as DD-MM-YYYY
+        return date.toLocaleDateString('en-GB');
+    }
+}
+// Function to add a new date header to the chat messages
+    function addDateHeader(chatMessages, dateStr) {
+        const dateElement = document.createElement('div');
+        dateElement.classList.add('date-container');
+        dateElement.dataset.date = dateStr;
+        dateElement.innerHTML = `<div class="date-header text-center">${formatDate(dateStr)}</div>`;
+        chatMessages.appendChild(dateElement);
+    }
+    // Function to fetch delivery and read status from the backend
+    async function updateMessageStatus(message, sender, recipient, timestamp) {
+        try {
+            const response = await fetch('/tick', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    content: message,
+                    sender,
+                    recipient,
+                    timestamp
+                })
+            });
+
+            const result = await response.json();
+            console.log(result.delivered, result.read)
+            let tickImgSrc = '';
+
+            if (result.delivered) {
+                tickImgSrc = result.read
+                    ? "https://img.icons8.com/?size=100&id=41638&format=png&color=000000" // Delivered and read
+                    : "https://img.icons8.com/?size=100&id=zeRZbA_1nZ3n&format=png&color=000000"; // Delivered but not read
+            } else {
+                tickImgSrc = "https://img.icons8.com/?size=100&id=11751&format=png&color=000000"; // Not delivered
+            }
+
+            return tickImgSrc;
+        } catch (error) {
+            console.error('Error fetching delivery status:', error);
+            return ''; // Return default empty source on error
+        }
+}
+   async function appendMessageToChatBox(message, username, side,tickImgSrc) {
+    const chatMessages = document.getElementById('chatMessages');
+    const messageElement = document.createElement('div');
+    messageElement.classList.add('message-container');
+    messageElement.classList.add(side === 'right' ? 'user-message' : 'admin-message');
+
+    const today = new Date();
+    const todayStr = today.toLocaleString('en-US', { year: 'numeric', month: '2-digit', day: '2-digit' }).replace(/\//g, '-');
+
+  
+    // Check if there are no messages in the chat box
+    if (chatMessages.children.length === 0) {
+        addDateHeader(chatMessages, todayStr);
+    }
+
+    // Get the last date container in the chat messages
+    const dateContainers = chatMessages.querySelectorAll('.date-container');
+    const lastDateContainer = dateContainers[dateContainers.length - 1];
+    const lastDate = lastDateContainer ? lastDateContainer.dataset.date : null;
+
+     
+    // Split todayStr by '-' to rearrange
+    let parts = todayStr.split('-');
+    let rearrangedTodayStr = parts[2] + '-' + parts[0] + '-' + parts[1];
+
+    console.log("Rearranged todayStr:", rearrangedTodayStr);
+    // If the date has changed, update the previous date header to "Yesterday"
+    if (lastDate && lastDate !== rearrangedTodayStr) {
+        if(lastDate !== todayStr){
+            console.log("to");
+            const lastDateHeader = lastDateContainer.querySelector('.date-header');
+            lastDateHeader.textContent = formatDate(lastDate);
+            addDateHeader(chatMessages, todayStr);
+        }
+    } else if (!lastDate || lastDate !== rearrangedTodayStr) {
+        console.log("adfsd");
+        addDateHeader(chatMessages, todayStr);
+    }
+
+    const formattedTime = new Date().toLocaleTimeString('en-US', {
+        hour12: true,
+        hour: '2-digit',
+        minute: '2-digit'
+    });
+    
+    
+    messageElement.innerHTML = `
+        <div class="one">${message}</div>
+        <div class="message-time">
+            ${tickImgSrc ? `<img src="${tickImgSrc}" style="width: 20px; height: 20px; object-fit: contain; padding: 2px;" />` : ''}
+            ${formattedTime}
+        </div>
+    `;
+    chatMessages.appendChild(messageElement);
+
+    // Scroll to the bottom of the chat window
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
+
+    function urlEncode(value) {
+            return encodeURIComponent(value);
+        };
+
+    // Function to fetch and display user's chat history with admin
+    async function displayUserChatHistory(username) {
+        try {
+            
+            const uname = urlEncode(username)
+            console.log("Display: ",username,"ll",uname,"ll")
+
+            const response = await fetch(`/userChatMessages/${uname}`);
+            const messages = await response.json();
+
+        // Group messages by date
+        const messagesByDate = messages.reduce((acc, msg) => {
+            const date = new Date(msg.timestamp);
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are zero-indexed, so add 1
+            const day = String(date.getDate()).padStart(2, '0');
+            const dateKey = `${year}-${month}-${day}`;
+            if (!acc[dateKey]) {
+                acc[dateKey] = [];
+            }
+            acc[dateKey].push(msg);
+            return acc;
+        }, {});
+
+        // Sort dates in ascending order
+        const sortedDates = Object.keys(messagesByDate).sort();
+
         const chatMessages = document.getElementById('chatMessages');
-        const messageElement = document.createElement('div');
-        messageElement.textContent = msg.content;
-        messageElement.classList.add('received-message'); // Add class to distinguish received messages
-        chatMessages.appendChild(messageElement);
+        chatMessages.innerHTML = ''; // Clear existing messages
+
+        // Display messages grouped by date
+        sortedDates.forEach(date => {
+            addDateHeader(chatMessages, date);
+
+            messagesByDate[date].forEach(msg => {
+                const messageElement = document.createElement('div');
+                messageElement.classList.add('message-container');
+
+                const formattedTime = new Date(msg.timestamp).toLocaleTimeString('en-US', {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    hour12: true
+                });
+
+                let tickImgSrc = ''; // Default to empty
+
+                // Determine tick image source based on delivery and read status
+                if (msg.from === username) {
+                    if (msg.delivered) {
+                        tickImgSrc = msg.read
+                            ? "https://img.icons8.com/?size=100&id=41638&format=png&color=000000" // Delivered and read
+                            : "https://img.icons8.com/?size=100&id=zeRZbA_1nZ3n&format=png&color=000000"; // Delivered but not read
+                    } else {
+                        tickImgSrc = "https://img.icons8.com/?size=100&id=11751&format=png&color=000000"; // Not delivered
+                    }
+                }
+
+                messageElement.innerHTML = `
+                    <div class="one">${decryptMessage(msg.content)}</div>
+                    <div class="message-time">
+                        ${tickImgSrc ? `<img src="${tickImgSrc}" style="width: 20px; height: 20px; object-fit: contain; padding: 2px;" />` : ''}
+                        ${formattedTime}
+                    </div>
+                `;
+                messageElement.classList.add(msg.from === username ? 'user-message' : 'admin-message'); // Adjust based on message sender
+                chatMessages.appendChild(messageElement);
+            });
+        });
 
         // Scroll to the bottom of the chat window
         chatMessages.scrollTop = chatMessages.scrollHeight;
-    });
+    } catch (error) {
+        console.error('Error fetching messages:', error);
+    }
+}
+// Handle receiving a message from the server
+socket.on('receiveMessage', async function(msg) {
+    // Decrypt the received message content
+    const decryptedContent = decryptMessage(msg.content);
+    
+    // Data contains sender, content, and timestamp
+    console.log('Message received from:', msg.sender);
+    console.log('Message to:', msg.to);
+    console.log('Content:', decryptedContent); // Decrypted content
+    console.log('Timestamp:', msg.timestamp);
+
+    // Determine the side to display the message (left for admin, right for user)
+    const side = msg.sender === 'admin' ? 'left' : 'right';
+            
+    const userName = encodeURIComponent(msg.to); // Ensure userName is correctly encoded
+
+    try {
+        // Fetch user messages after receiving a new message
+        const response = await fetch(`/userChatMessages/${userName}`);
+        if (!response.ok) {
+            throw new Error('Failed to fetch user messages');
+        }
+
+        // Optionally handle the response data here if needed
+        const messages = await response.json();
+        console.log('Fetched messages:', messages);
+
+        // Example: Update UI to mark messages as read
+        messages.forEach(message => {
+            if (message.from === 'admin' && !message.read) {
+                // Mark message as read in your UI logic
+                console.log(`Marking message from ${message.to} as read`);
+            }
+        });
+        const toggleChatButton = document.getElementById('toggleChat');
+        // Check if the chat button is hidden, then increase unread count
+        if (toggleChatButton.style.display === 'none') {
+            increaseUnreadCount();
+        }
+
+        // Function to increase unread message count
+        function increaseUnreadCount() {
+            const unreadCountSpan = document.querySelector('.unread-count');
+            if (unreadCountSpan) {
+                let currentCount = parseInt(unreadCountSpan.textContent) || 0;
+                unreadCountSpan.textContent = currentCount + 1;
+            }
+        }
+        // Append received message to chat box
+        await appendMessageToChatBox(decryptedContent, msg.to, side);
+
+    } catch (error) {
+        console.error('Error fetching user messages:', error);
+    }
+
+  
+    // Check for notification permission and show notification
+    if (Notification.permission === 'granted') {
+        const notification = new Notification('New Message', {
+            body: decryptedContent,
+            image: 'https://www.pixelstalk.net/wp-content/uploads/2016/03/Cat-Wallpaper-pictures-background.jpg', // Optional: URL for a large image associated with the notification
+            tag: 'new-message'
+        });
+
+        notification.onclick = () => {
+            window.focus(); // Focus the window when the notification is clicked
+
+            // Replace '{{name}}' with the actual username variable
+            const username = "{{name}}"; // Ensure this is dynamically replaced with the actual username
+
+            // Redirect to the user's chat page
+            window.location.href = `/userChat/${username}`;
+        };
+    }
+});
+
+// Show notification
+
+
 </script>
 </body>
 </html>

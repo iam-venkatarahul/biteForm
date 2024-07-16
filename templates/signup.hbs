@@ -200,7 +200,12 @@
             showConfirmationDialog();
         });
 
+         function trimUsername() {
+        var username = $('.username').val().trim(); // Trim spaces
+        $('.username').val(username); // Update the field with trimmed value
+    }
         function showConfirmationDialog() {
+            trimUsername(); // Trim username before confirmation
             var username = $('.username').val();
             var email = $('.email').val();
             var role = $('.role').val();

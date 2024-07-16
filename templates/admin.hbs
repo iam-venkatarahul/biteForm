@@ -11,6 +11,10 @@
     <!-- Font Awesome CSS -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
     <style>
+        body{
+            background-color: #FFDEE9;
+            background-image: linear-gradient(85deg, #FFDEE9 0%, #B5FFFC 100%);
+        }
         .table td, .table th {
             vertical-align: middle;
         }
@@ -42,11 +46,38 @@
             z-index: 9999; /* Ensure it's on top of other content */
             cursor: pointer;
         }
+        .chat-icon-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            cursor: pointer;
+        }
+
+        .chat-icon-container .fa-comment-dots {
+            font-size: 3rem;
+            position: relative;
+        }
+
+        .chat-icon-container .unread-count {
+            position: absolute;
+            top: 8px;
+            right: 4px;
+            background: rgb(255, 255, 255);
+            color: black;
+            border-radius: 50%;
+            padding: 0.25rem 0.5rem;
+            font-size: 0.75rem;
+        }
+         .table-dark th {
+            color: rgb(0, 0, 0);
+            text-align: center;
+            padding: 12px;
+            background: linear-gradient(110deg  , #66bfbf, #eaf6f6, #fcfefe, #f76b8a);
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        
         <div class="header">
             <p>
             <h3 style="text-align: center;" class="mt-5 mb-4">Admin Page</h3>
@@ -79,11 +110,13 @@
                 <thead class="table-dark">
                     <tr>
                         <th scope="col">S.No.</th>
-                        <th scope="col" class="name-column">Name</th>
-                        <th scope="col" class="tab-column">Tab - Breakfast</th>
-                        <th scope="col" class="tab-column">Tab - Lunch</th>
-                        <th scope="col" class="tab-column">Tab - Supper</th>
-                        <th scope="col" class="wallpaper-column">Wallpaper</th>
+                        <th scope="col" class="name-column" style="text-align:center;">Name</th>
+                        <th scope="col" class="tab-column" style="text-align:center;background-image: url('https://osteodiet.com/wp-content/uploads/2012/07/Breakfast-1024x258.jpg');background-size: contain; background-position:center; background-repeat: no-repeat; background-color: white;"></th>
+                        <th scope="col" class="tab-column" style="text-align:center;background-image: url('https://go.sdale.org/LunchCounts/00/Name.svg');background-size: contain; background-position:center; 
+                        background-repeat: no-repeat; background-color: white; "></th>
+                        <th scope="col" class="tab-column"  style="text-align:center;background-image: url('https://www.48hourslogo.com/48hourslogo_data/2016/10/04/54623_1475588469.jpg');background-size: cover; background-position:center; 
+                        background-repeat: no-repeat; background-color: white; "></th>
+                        <th scope="col" class="wallpaper-column" >Wallpaper</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -96,12 +129,13 @@
                                 {{#each this.tab.breakfast}}
                                     <ul>
                                         <li><strong>Name:</strong> {{this.name}}</li>
-                                        {{#if this.ate}}<li><strong>Ate:</strong> {{this.ate}}</li>{{/if}}
+                                        <li><strong>Ate:</strong> {{this.ate}}</li>
                                         {{#if this.reason}}<li><strong>Reason:</strong> {{this.reason}}</li>{{/if}}
-                                        {{#if this.tablets}}<li><strong>Tablets:</strong> {{this.tablets}}</li>{{/if}}
-                                        <li><strong>Timestamp:</strong> {{formatDate this.timestamp}}</li>
+                                        <li><strong>Tablets:</strong> {{this.tablets}}</li>
+                                        <li><strong>Timestamp:</strong> {{formatDateTS this.timestamp}}</li>
                                     </ul>
                                 {{/each}}
+                                {{else}} <p class="text-muted" style="text-align:center;">No entry</p>
                             {{/if}}
                         </td>
                         <td>
@@ -109,12 +143,13 @@
                                 {{#each this.tab.lunch}}
                                     <ul>
                                         <li><strong>Name:</strong> {{this.name}}</li>
-                                        {{#if this.ate}}<li><strong>Ate:</strong> {{this.ate}}</li>{{/if}}
+                                        <li><strong>Ate:</strong> {{this.ate}}</li>
                                         {{#if this.reason}}<li><strong>Reason:</strong> {{this.reason}}</li>{{/if}}
-                                        {{#if this.tablets}}<li><strong>Tablets:</strong> {{this.tablets}}</li>{{/if}}
-                                        <li><strong>Timestamp:</strong> {{formatDate this.timestamp}}</li>
+                                        <li><strong>Tablets:</strong> {{this.tablets}}</li>
+                                        <li><strong>Timestamp:</strong> {{formatDateTS this.timestamp}}</li>
                                     </ul>
                                 {{/each}}
+                                {{else}} <p class="text-muted" style="text-align:center;">No entry</p>
                             {{/if}}
                         </td>
                         <td>
@@ -122,12 +157,13 @@
                                 {{#each this.tab.supper}}
                                     <ul>
                                         <li><strong>Name:</strong> {{this.name}}</li>
-                                        {{#if this.ate}}<li><strong>Ate:</strong> {{this.ate}}</li>{{/if}}
+                                        <li><strong>Ate:</strong> {{this.ate}}</li>
                                         {{#if this.reason}}<li><strong>Reason:</strong> {{this.reason}}</li>{{/if}}
-                                        {{#if this.tablets}}<li><strong>Tablets:</strong> {{this.tablets}}</li>{{/if}}
-                                        <li><strong>Timestamp:</strong> {{formatDate this.timestamp}}</li>
+                                        <li><strong>Tablets:</strong> {{this.tablets}}</li>
+                                        <li><strong>Timestamp:</strong> {{formatDateTS this.timestamp}}</li>
                                     </ul>
                                 {{/each}}
+                                {{else}} <p class="text-muted" style="text-align:center;">No entry</p>
                             {{/if}}
                         </td>
                         <td>{{#if this.wallpaper}}<em>True</em>{{else}}-{{/if}}</td>
@@ -137,8 +173,10 @@
             </table>
         </div>
         {{/each}}
-    <div id="chatIcon" class="position-fixed bottom-0 end-0 m-3" style="cursor: pointer;">
-        <a href="adminChat/{{admin}}"<i class="fas fa-comment-dots fa-3x"></i></a>
+    <div id="chatIcon" class="position-fixed bottom-0 end-0 m-3 chat-icon-container" style="cursor: pointer;">
+        <a href="adminChat/{{admin}}"><img src="https://img.icons8.com/?size=100&id=116714&format=png&color=000000">{{#if unreadCount}}
+        <span class="unread-count">{{unreadCount}}</span>
+        {{/if}}</a>
     </div>
     </div>
 
@@ -148,7 +186,53 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
     <!-- JQuery -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdn.socket.io/4.4.1/socket.io.min.js"></script>
     <script>
+        const socket = io({
+        query: {
+            userName: "{{admin}}" // Replace with actual username or identifier
+        }
+    });
+        socket.on('ur',(unreadCount)=>{
+            console.log(data)
+        //const unreadCount = data.unreadCount;
+        // Find the element displaying the unread count
+        const unreadCountElement = document.querySelector('.unread-count');
+        if (unreadCount > 0) {
+            // If the element exists, update its content
+            if (unreadCountElement) {
+                unreadCountElement.textContent = unreadCount;
+            } else {
+                // If the element doesn't exist and unreadCount is greater than 0, create the element
+                    const chatIconContainer = document.getElementById('chatIcon');
+                    const newUnreadCountElement = document.createElement('span');
+                    newUnreadCountElement.className = 'unread-count';
+                    newUnreadCountElement.textContent = unreadCount;
+                    chatIconContainer.appendChild(newUnreadCountElement);
+                }
+        }
+        console.log(`${unreadCount}`)
+    })
+            socket.on('receiveMessage',(data)=>{
+            const unreadCount = data.unreadCount;
+            // Find the element displaying the unread count
+            const unreadCountElement = document.querySelector('.unread-count');
+
+            // If the element exists, update its content
+            if (unreadCountElement) {
+                unreadCountElement.textContent = unreadCount;
+            } else {
+                // If the element doesn't exist and unreadCount is greater than 0, create the element
+                if (unreadCount > 0) {
+                    const chatIconContainer = document.getElementById('chatIcon');
+                    const newUnreadCountElement = document.createElement('span');
+                    newUnreadCountElement.className = 'unread-count';
+                    newUnreadCountElement.textContent = unreadCount;
+                    chatIconContainer.appendChild(newUnreadCountElement);
+                }
+            }
+        console.log(`${unreadCount}`)
+    })
         // Handle logout confirmation
         $(document).ready(function () {
             $('#confirmLogout').click(function () {

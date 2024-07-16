@@ -12,6 +12,11 @@ const multer = require('multer'); // Import multer for file upload
 const fs = require('fs');
 const methodOverride = require('method-override')
 const cron = require('node-cron');
+const livereload = require("livereload");
+
+const liveReloadServer = livereload.createServer();
+liveReloadServer.watch(path.join(__dirname, 'public'));
+
 // index.js
 
 const { transporter, sendEmail } = require('./emailScheduler'); // Adjust the path as needed
@@ -49,7 +54,7 @@ cron.schedule('0 9,13,19 * * *', async () => { // Runs at 9 AM, 12 PM, and 7 PM 
 });
 
 // Schedule email reminders
-cron.schedule('45 11,15,21vs  * * *', async () => { // Runs at 11:45 AM, 3:45 PM, and 9:45 PM IST
+cron.schedule('45 11,15,21  * * *', async () => { // Runs at 11:45 AM, 3:45 PM, and 9:45 PM IST
     const now = moment().tz('Asia/Kolkata');
     const users = await User.find({ role: { $ne: 'admin' } });
 
@@ -73,8 +78,11 @@ cron.schedule('45 11,15,21vs  * * *', async () => { // Runs at 11:45 AM, 3:45 PM
 // Log message to indicate the application is running
 console.log('Node.js application running with cron jobs...');
 const app = express();
+app.use(connectLivereload());
 const templatePath = path.join(__dirname, '../templates');
 const uploadPath = path.join(__dirname, '../uploads');
+
+const connectLivereload = require("connect-livereload");
 
 app.use('/uploads', express.static(uploadPath)); 
 app.use(express.static(path.join(__dirname, '../public')));
@@ -208,6 +216,9 @@ app.get('/user/:name', async (req, res) => {
     if (!uname) {
         return res.redirect('/signin');
     }
+    else if(uname !== req.params.name){
+        return res.redirect("/signin")
+    }
     const name = req.params.name;
     const user = await User.findOne({ name });
     if (!user) {
@@ -226,7 +237,7 @@ app.get('/user/:name', async (req, res) => {
       console.log(user)
       await user.save()
       res.status(200).send('Phone number updated successfully');
-      sendEmail(user.email,"Your Phone Number Has Been Successfully Updated",`Hello ${user.name},\n\nWe wanted to let you know that your phone number for your BiteForm account has been successfully updated to ${user.phone}.\n\nIf you did not reset your password, please contact our support team immediately at vcareyou.biteform@gmail.com to secure your account.\n\nThank you for using BiteForm!\n\nBest regards,\nThe BiteForm Team`)
+      sendEmail(user.email,"Your Phone Number Has Been Successfully Updated",`Hello ${user.name},\n\nWe wanted to let you know that your phone number for your BiteForm account has been successfully updated to ${user.phone}.\n\nIf you did not update your number, please contact our support team immediately at vcareyou.biteform@gmail.com to secure your account.\n\nThank you for using BiteForm!\n\nBest regards,\nThe BiteForm Team`)
     } catch (error) {
       console.error('Error updating phone number:', error);
       res.status(500).send('Internal Server Error');
@@ -333,11 +344,37 @@ app.post('/signin', async (req, res) => {
 
         // Redirect based on the role
         if (role === 'user') {
+            const msgs = await Message.find(
+                { to: name, delivered: false });
+                //console.log(msgs,"msgs User")
+            const updateResult = await Message.updateMany(
+                { to: name, delivered: false },
+                { $set: { delivered: true } }
+            );
+            
+            //console.log(`Updated ${updateResult} messages for admin`);
+            // Emit event to notify clients (users) about message delivery update
+            io.emit('UserLoggedIn',name);
             return res.redirect('/user');
         } else if (role === 'admin') {
             if (user.role !== 'admin') {
                 return res.render('signin', { error: 'Invalid details' });
             }
+            const msgs = await Message.find(
+                { to: 'admin', delivered: false });
+                console.log(msgs,"msgs")
+            const updateResult = await Message.updateMany(
+                { to: 'admin', delivered: false },
+                { $set: { delivered: true } }
+            );
+            
+            console.log(`Updated ${updateResult} messages for admin`);
+            // Emit event to notify clients (users) about message delivery update
+            io.emit('adminLoggedIn');
+            const unreadCount = await User.countDocuments({to: "admin", read: false})
+            io.emit('ur',unreadCount)
+            
+            return res.redirect('/admin');
         } else {
             return res.status(400).send('Invalid role');
         }
@@ -347,22 +384,9 @@ app.post('/signin', async (req, res) => {
     }
 });
 
-
-
-// Add these imports at the top
-const { ObjectId } = require('mongoose').Types; // Import ObjectId for MongoDB queries
-
-const http = require('http');
-const { Server } = require('socket.io');
-
-const server = http.createServer(app);
-const io = new Server(server);
-
-
-// Middleware to check if a user is authenticated
 const isAuthenticated = (req, res, next) => {
-        const name = req.session.userName;
-    if (!name) {
+    const userName = req.session.userName;
+    if (!userName) {
         return res.redirect('/signin');
     }
     next();
@@ -372,6 +396,7 @@ hbs.registerHelper('urlEncode', function(value) {
     return encodeURIComponent(value);
 });
 
+
 // Route to get user page
 app.get('/user', isAuthenticated, async (req, res) => {
     const name = req.session.userName;
@@ -380,105 +405,44 @@ app.get('/user', isAuthenticated, async (req, res) => {
     }
     try {
         const user = await User.findOne({ name });
-        if (!user) {
+        if (!user || user.role !=="user") {
             return res.status(404).send('User not found');
         }
 
         const storedTabStates = req.session.tabStates || {};
         const noCustomWallpaper = !user.wallpaper;
 
+        // Example logic to count unread messages
+        const unreadMessagesCount = await Message.countDocuments({
+            from: "admin",
+            to: user.name,
+            read: false , // Assuming there's a 'read' field in Message schema
+        });
+        // Update lastLogout time
+        user.lastLogin = new Date();
+        await user.save();
+
+        await Message.updateMany(
+            { from: "admin",
+                to: user.name,
+                delivered: false 
+            }, // Filter criteria: unread messages to 'username'
+            { $set: { delivered: true } }      // Update: set 'read' to true
+        );
+
         res.render('user', {
             name: user.name,
             feedbackSchema: user.tab,
             storedTabStates: storedTabStates,
-            noCustomWallpaper: noCustomWallpaper
+            noCustomWallpaper: noCustomWallpaper,
+          //  delivered:delivered,
+            unreadCount: unreadMessagesCount===0 ? null:unreadMessagesCount
         });
     } catch (error) {
         console.error('Error fetching user:', error);
         res.status(500).send('Internal Server Error');
     }
 });
-
-// Socket.IO integration
-io.on('connection', (socket) => {
-    console.log('A user connected');
-
-    socket.on('join', (username) => {
-        socket.join(username);
-        console.log(`${username} joined room`);
-    });
-
-    socket.on('disconnect', () => {
-        console.log('User disconnected');
-    });
-
-    socket.on('sendMessage', async ({ sender, recipient, content }) => {
-        try {
-            const message = await Message.create({ sender, recipient, content });
-
-            io.to(recipient).emit('receiveMessage', message);
-            io.to(sender).emit('messageSent', message);
-        } catch (error) {
-            console.error('Error sending message:', error);
-        }
-    });
-});
-
-// Route to render the admin chat page
-app.get('/adminChat/:name', isAuthenticated, async (req, res) => {
-    const name = req.params.name;
-    try {
-        const user = await User.findOne({ name });
-        if (!user || user.role !== 'admin') {
-            return res.status(404).send('Admin not found');
-        }
-
-        const users = await User.find({ role: 'user' });
-        res.render('adminChat', { users });
-    } catch (error) {
-        console.error('Error fetching users:', error);
-        res.status(500).send('Internal Server Error');
-    }
-});
-
-// Route for sending messages from the admin to a user
-app.post('/send-message/:recipient', isAuthenticated, async (req, res) => {
-    try {
-        const sender = req.session.userName; // Use session to determine the sender (admin)
-        const recipient = req.params.recipient;
-        const { content } = req.body;
-
-        const message = await Message.create({ sender, recipient, content });
-
-        io.to(recipient).emit('receiveMessage', message);
-
-        res.status(201).json(message);
-    } catch (error) {
-        console.error('Error sending message:', error);
-        res.status(500).json({ error: 'Internal server error' });
-    }
-});
-
-// Route for fetching messages for a particular user or the admin
-app.get('/messages/:recipient', isAuthenticated, async (req, res) => {
-    try {
-        const recipient = req.params.recipient;
-        const sender = req.session.userName;
-
-        const messages = await Message.find({
-            $or: [
-                { sender: recipient, recipient: sender },
-                { sender: sender, recipient: recipient }
-            ]
-        });
-
-        res.json(messages);
-    } catch (error) {
-        console.error('Error fetching messages:', error);
-        res.status(500).json({ error: 'Internal server error' });
-    }
-});
-
 
 // Endpoint to fetch user data from the session
 app.get('/userdata', async (req, res) => {
@@ -517,7 +481,7 @@ app.post('/updateTabStates', async (req, res) => {
     }
 });
 
-app.post('/user', async (req, res) => {
+app.post('/userForm', async (req, res) => {
     try {
         const { name, ate, reason, tablets, tab } = req.body;
 
@@ -616,13 +580,17 @@ mongoose.connect(mongoURI, {
     console.error('MongoDB connection error:', err);
     process.exit(1); // Exit process on connection failure
   });
-  
+ 
 // Initialize GridFS
 let gfs;
+let gfsAvatars;
 
 mongoose.connection.once('open', () => {
   gfs = new mongoose.mongo.GridFSBucket(mongoose.connection.db, {
     bucketName: 'li_wallpapers'
+  });
+  gfsAvatars = new mongoose.mongo.GridFSBucket(mongoose.connection.db, {
+    bucketName: 'li_avatars'
   });
 });
 
@@ -753,9 +721,165 @@ app.post('/delete-wallpaper/:username', async (req, res) => {
     }
   });
 
+
+// GridFSStorage configuration for avatars
+const storageAvatars = new GridFsStorage({
+  url: mongoURI,
+  file: async (req, file) => {
+    const username = req.params.username;
+    const fileExtension = path.extname(file.originalname);
+    const filename = `${username}_avatar${fileExtension}`;
+    console.log(username, filename);
+
+    try {
+      // Check if a file with the same filename exists in GridFS (avatars)
+      const existingFiles = await gfsAvatars.find({ filename: new RegExp(`^${username}_avatar`) }).toArray();
+      for (const existingFile of existingFiles) {
+        await gfsAvatars.delete(existingFile._id);
+      }
+    } catch (error) {
+      console.error('Error deleting existing avatar files:', error);
+    }
+
+    return {
+      filename: filename,
+      bucketName: 'li_avatars', // Store avatars in 'avatars' collection
+      metadata: {
+        username: username, // Store username in metadata
+      },
+    };
+  }
+});
+
+const uploadAvatar = multer({ storage: storageAvatars });
+
+// POST endpoint for uploading avatar
+app.post('/uploadProfilePhoto/:username', uploadAvatar.single('avatar'), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: 'No file uploaded.' });
+    }
+
+    const extension = path.extname(req.file.originalname);
+    const filename = `${req.params.username}_avatar${extension}`;
+    console.log(req.params.username, "post", filename);
+
+    // Handle file upload to GridFS (avatars)
+    const writeStream = gfsAvatars.openUploadStream(filename, {
+      contentType: req.file.mimetype,
+      metadata: {
+        username: req.params.username, // Store username in metadata
+      },
+    });
+
+    writeStream.end(req.file.buffer);
+
+    writeStream.on('finish', async () => {
+      try {
+        // Update user with new avatar filename
+        const user = await User.findOneAndUpdate(
+          { name: req.params.username },
+          { avatar: filename }, // Store filename or metadata instead of fileId
+          { new: true }
+        );
+
+        if (!user) {
+          return res.status(404).json({ error: 'User not found.' });
+        }
+
+        console.log('User details:', user);
+
+        // Find and delete files with the same username and zero length
+        const zeroLengthFiles = await gfsAvatars.find({ 
+          'metadata.username': req.params.username, 
+          length: { $eq: 0 } 
+        }).toArray();
+
+        for (const file of zeroLengthFiles) {
+          await gfsAvatars.delete(file._id);
+          console.log(`Deleted zero-length file: ${file.filename}`);
+        }
+
+        res.json({ fileId: writeStream.id });
+      } catch (err) {
+        console.error('Error updating user with avatar:', err);
+        res.status(500).json({ error: err.message });
+      }
+    });
+  } catch (err) {
+    console.error('Error uploading avatar:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.delete('/deleteProfilePhoto/:username', async (req, res) => {
+    try {
+      const username = req.params.username;
+  
+      // Find the avatar file by username
+      const avatarFiles = await gfsAvatars.find({ 'metadata.username': username }).toArray();
+  
+      if (!avatarFiles || avatarFiles.length === 0) {
+        return res.status(404).json({ error: 'Avatar not found.' });
+      }
+  
+      // Delete all found avatar files
+      for (const file of avatarFiles) {
+        await gfsAvatars.delete(file._id);
+        console.log(`Deleted avatar file: ${file.filename}`);
+      }
+  
+      // Update user document to remove avatar reference
+      const user = await User.findOneAndUpdate(
+        { name: username },
+        { $unset: { avatar: "" } }, // Remove avatar field from user document
+        { new: true }
+      );
+  
+      if (!user) {
+        return res.status(404).json({ error: 'User not found.' });
+      }
+  
+      console.log('User details updated:', user);
+      res.json({ message: 'Avatar deleted successfully.' });
+    } catch (err) {
+      console.error('Error deleting avatar:', err);
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+// GET endpoint for retrieving avatar by username
+app.get('/avatar/:username', async (req, res) => {
+    try {
+      const username = req.params.username;
+  
+      // Find all avatar files with matching username and non-zero length
+      const avatarFiles = await gfsAvatars.find({ 'metadata.username': username }).toArray();
+      //console.log(avatarFiles.length)
+      if (avatarFiles && avatarFiles.length > 0) {
+        // Assuming there's only one avatar per username, retrieve the first one
+        const readStream = gfsAvatars.openDownloadStream(avatarFiles[0]._id);
+        readStream.pipe(res);
+        console.log("Avatar found!");
+        }
+        else{
+            //console.error('Error retrieving avatar: No avatar found for username', username);
+            res.status(500).json({ error: 'No avatar found' });
+        }
+    }catch (err) {
+        console.log("Error")
+      console.error('Error retrieving avatar:', err);
+      res.status(500).json({ error: err.message });
+    }
+});
+  
 // Register Handlebars helper function to format date
-hbs.registerHelper('formatDate', function (timestamp) {
-    return moment(timestamp).tz('Asia/Kolkata').format('YYYY-MM-DD HH:mm:ss');
+hbs.registerHelper('formatDateTS', function (timestamp) {
+    if(timestamp)
+    {
+        return moment(timestamp).tz('Asia/Kolkata').format('YYYY-MM-DD HH:mm:ss');
+    }
+    return null;
 });
 
 // Register Handlebars helper function for equality check
@@ -765,6 +889,17 @@ hbs.registerHelper('eq', function (a, b) {
 
 app.get('/admin', async (req, res) => {
     const name = req.session.userName;
+    
+    const user = await User.findOne({name: name,role:"admin"})
+    if(!user){
+        return res.redirect("/signin")
+    }
+    if(name !== user.name){
+        return res.redirect("/signin")
+    }
+    user.lastLogin = new Date()
+    await user.save()
+
     if (!name) {
         return res.redirect('/signin');
     }
@@ -785,13 +920,14 @@ app.get('/admin', async (req, res) => {
         // Sort dates in descending order
         const sortedDates = Array.from(allDates).sort((a, b) => new Date(b) - new Date(a));
 
+
         // Ensure each date has an entry for each user
         const groupedUsers = {};
         sortedDates.forEach(date => {
             groupedUsers[date] = users.map(user => {
                 const getEntriesForMeal = meal => {
                     const entries = user.tab[meal].filter(entry => moment(entry.timestamp).format('YYYY-MM-DD') === date);
-                    return entries.length ? entries : [{ name: '', ate: '', reason: '', tablets: '', timestamp: '' }];
+                    return entries.length ? entries : null;
                 };
 
                 return {
@@ -806,25 +942,522 @@ app.get('/admin', async (req, res) => {
             });
         });
 
-        res.render('admin', { admin:name,groupedUsers });
+        // Example logic to count unread messages
+        const unreadMessagesCount = await Message.countDocuments({
+            to: "admin",
+            read: false  // Assuming there's a 'read' field in Message schema
+        });
+
+        res.render('admin', { admin:name, groupedUsers,
+            unreadCount: unreadMessagesCount === 0 ? null : unreadMessagesCount
+         });
+         
     } catch (error) {
         console.error('Error fetching non-admin users:', error);
         res.status(500).send('Internal Server Error');
     }
 });
 
-app.get("/userChat",(req,res)=>{
-    const name = req.session.userName;
-    if (!name) {
-        return res.redirect('/signin');
+const http = require('http');
+const { Server } = require('socket.io');
+const server = http.createServer(app);
+const io = new Server(server);
+
+
+const CryptoJS = require('crypto-js');
+
+function encryptMessage(message) {
+    const ciphertext = CryptoJS.AES.encrypt(message, 'd916ffebd9a2f453e288cb201037592ccb58c1ba9a40b12b3dbe79e05d232a7d').toString();
+    return ciphertext;
+}
+
+function decryptMessage(ciphertext) {
+    const bytes = CryptoJS.AES.decrypt(ciphertext, 'd916ffebd9a2f453e288cb201037592ccb58c1ba9a40b12b3dbe79e05d232a7d');
+    const originalText = bytes.toString(CryptoJS.enc.Utf8);
+    //console.log("Original text: ",originalText)
+    return originalText;
+}
+
+
+// Route to handle sending messages
+app.post('/sendMessage', async (req, res) => {
+    try {
+        let { sender, recipient, content ,timestamp } = req.body;
+        let user
+        console.log(recipient)
+        //console.log("recipient: ",recipient)
+        if(recipient === "admin")
+        {
+            user = await User.findOne({role: "admin"});
+        }
+        else{
+            user = await User.findOne({name: recipient});
+        }
+        //console.log(user)
+        const presentTime = new Date()
+        const loginTime = new Date(user.lastLogin)
+        const logoutTime = new Date(user.lastLogout)
+        // const delivered = ((login < presentTime) && (logout > presentTime)) ? true: false;
+        // console.log(`${presentTime} ${user.lastLogin} ${user.lastLogout} ${login} ${logout}`)
+        // console.log("Delivered: ",delivered)
+        let delivered = false;
+
+            if (loginTime && logoutTime || loginTime) {
+                delivered = loginTime > logoutTime && loginTime < presentTime;
+            } else {
+                console.log("No login and logout timings ")
+            }
+
+            console.log(`Present Time: ${presentTime}`);
+            console.log(`User's Last Login: ${loginTime}`);
+            console.log(`User's Last Logout: ${logoutTime}`);
+            console.log(`Message Delivered: ${delivered}`);
+
+        // Save the encrypted message to MongoDB
+        const message = new Message({
+            from: sender,
+            to: recipient,
+            content:  content,
+            delivered: delivered,
+            timestamp:timestamp
+        });
+
+        await message.save();
+        //console.log(`Sender: ${sender} To: ${recipient} Msg: ${decryptMessage(content)}`)
+        // Emit the message to the recipient via Socket.IO
+        if(recipient==="admin"){
+            const adminUser = await User.findOne({ role: "admin" });
+            
+            if (adminUser) {
+                recipient = adminUser.name; // You can assign adminUser directly if needed
+                console.log(`Admin: ${adminUser.name}`);
+            } else {
+                console.log('Admin user not found');
+                return; // Optionally, handle the case when no admin user is found
+            }
+        }
+        const admin = await User.findOne({role:"admin"})
+        let unreadCount
+        if(recipient === admin.name)
+        {
+            unreadCount = await Message.countDocuments({to:"admin", read: false})
+        }
+        else{
+            unreadCount = await Message.countDocuments(({to:recipient, read:false}))
+        }
+        //console.log(recipient,unreadCount)
+        io.to(recipient).emit('receiveMessage', {
+            sender: sender,
+            to:recipient,
+            content: content,
+            timestamp: message.timestamp,
+            unreadCount :unreadCount === 0 ? null : unreadCount
+        });
+        
+        res.status(200).send('Message sent successfully');
+    } catch (error) {
+        console.error('Error sending message:', error);
+        res.status(500).send('Internal server error');
     }
-    res.render('userChat')
+});
+
+// Socket.IO handling for user connection
+io.on('connection', async (socket) => {
+    console.log('A user connected');
+
+    // Join user's own room (assuming userName is available)
+    const { userName } = socket.handshake.query; // Assuming you pass userName as a query parameter
+    socket.join(userName);
+    console.log(`${userName} connected`);
+    
+    // Handle disconnect
+    socket.on('disconnect', () => {
+        console.log(`${userName} disconnected`);
+    });
+});
+app.get('/userMessages/:username', async (req, res) => {
+    try {
+         const sname  = req.session.userName
+         const   username   = req.params.username;
+         if(!sname){
+             return res.redirect('/signin')
+         }
+        else if(sname !== username)
+        {
+            return res.redirect("/signin")
+        }
+       //console.log("Username: ",`${username}`)
+    
+        // Check for exact match with potential trailing spaces
+        const user = await User.findOne({ name: username });
+
+        if (!user) {
+            console.log("User not found:", `"${username}"`);
+            return res.status(404).send('User not found');
+        }
+       // console.log("Msgs name: ",username,"ll")
+        const presentTime = new Date()
+        const loginTime = new Date(user.lastLogin)
+        const logoutTime = new Date(user.lastLogout)
+        // const delivered = ((login < presentTime) && (logout > presentTime)) ? true: false;
+       // console.log(`${presentTime} ${user.lastLogin} ${user.lastLogout} ${loginTime} ${logoutTime}`)
+        //console.log("Delivered: ",delivered)
+        
+            if (loginTime && logoutTime || loginTime) {
+                delivered = loginTime > logoutTime && loginTime < presentTime;
+               // console.log("Delivered: ",delivered)
+            } else {
+                console.log("No login and logout timings ")
+            }
+        // Find all messages where the sender is the specified user and recipient is 'Admin'
+        const messages = await Message.find({ $or: [{ from: username, to: 'admin' }, { from: 'admin', to: username }] });
+        
+        const unreadMessages = await Message.find({to: "admin", read : "false"})
+        console.log(unreadMessages)
+        await Message.updateMany(
+            { from: username, to: 'admin', read: false }, // Filter criteria: unread messages to 'username'
+            { $set: { read: true } }      // Update: set 'read' to true
+        );
+        const admin =  await User.findOne({role:"admin"})
+        //console.log(admin.name,"AN")
+        // Emit 'AdminRead' to the user and the admin
+        io.to(username).emit('AdminRead', username, unreadMessages, { unreadCount: unreadMessages.length });
+        io.to(admin.name).emit('AdminRead', username, unreadMessages, { unreadCount: unreadMessages.length });
+
+
+        //console.log("Messages read by admin")
+      //  console.log("Messages: ",messages)
+        res.status(200).json(messages);
+    } catch (error) {
+        console.error('Error fetching messages:', error);
+        res.status(500).send('Internal server error');
+    }
+});
+
+app.get('/userChatMessages/:username', async (req, res) => {
+     const sname  = req.session.userName
+        const   username   = req.params.username;
+        if(!sname){
+            return res.redirect('/signin')
+        }
+        else if(sname !== username)
+        {
+            return res.redirect("/signin")
+        }
+        
+
+    //console.log("Username: ",username)
+    try {
+        const user =  User.findOne({name: username })
+        {
+            if(!user)
+            {
+                return res.status(404).send('User not found');
+            }
+        }
+        const adminUser = await User.findOne({role: "admin"})
+        const presentTime = new Date()
+        const loginTime = new Date(adminUser.lastLogin)
+        const logoutTime = new Date(adminUser.lastLogout)
+        
+        if (loginTime && logoutTime || loginTime) {
+            delivered = loginTime > logoutTime && loginTime < presentTime;
+        } else {
+            console.log("No login and logout timings ")
+        }
+        const unreadMessages = await Message.find({from: "admin", read : "false"})
+        //console.log(unreadMessages)
+        // Find all messages where the sender is the specified user and recipient is 'Admin'
+        const messages = await Message.find({ $or: [{ from: username, to: 'admin' }, { from: 'admin', to: username }] });
+
+        if(username){
+           // console.log("Messages updated")
+        await Message.updateMany(
+            { from: "admin", to: username, read: false }, // Filter criteria: unread messages to 'username'
+            { $set: { read: true } }      // Update: set 'read' to true
+        );
+        io.emit('UserRead',username,unreadMessages)
+    }
+        //console.log(`Messages read by ${username}`)
+    
+      //  console.log("Messages: ",messages)
+        res.status(200).json(messages);
+    } catch (error) {
+        console.error('Error fetching messages:', error);
+        res.status(500).send('Internal server error');
+    }
+});
+
+// Route to render admin chat page
+app.get('/adminChat/:username', async (req, res) => {
+
+    const { username } = req.params;
+    //console.log(username);
+
+    try {
+        // Find the admin user
+        const admin = await User.findOne({ name: username });
+       // console.log("admin: ", admin);
+        // const sname = req.session.userName;
+        // if (!sname)
+        // {
+        //     return res.redirect('/signin')
+        // }
+        // else if(sname !== admin)
+        // {
+        //     return res.redirect('/signin')
+        // }
+        if (!admin) {
+            return res.status(404).send('Admin not found');
+        }
+
+        // Check if the user has admin role
+        if (admin.role !== 'admin') {
+            return res.status(403).send('Access denied');
+        }
+
+        // Find all regular users (not admins)
+        const users = await User.find({ role: { $ne: 'admin' } }, { name: 1 });
+
+        // Prepare array to hold users with their last messages
+        const usersWithLastMessages = [];
+
+        // Fetch last messages for each user
+        for (const user of users) {
+          //  console.log("User:",user.name)
+           // console.log("Admin: ",admin.name)
+            const lastMessage = await Message.findOne({
+                $or: [
+                    { from: user.name, to: "admin" },
+                    { from: "admin", to: user.name }
+                ]
+            })
+            .sort({ timestamp: -1 });
+            //console.log("Last msg: ",lastMessage);
+
+            // Example logic to count unread messages
+            const unreadMessagesCount = await Message.countDocuments({
+                from: user.name,
+                to: "admin",
+                read: false  // Assuming there's a 'read' field in Message schema
+            });
+            
+            
+          //  console.log(unreadMessagesCount)
+            usersWithLastMessages.push({
+                name: user.name,
+                status: user.status || 'Online',
+                unreadMessages: unreadMessagesCount === 0 ? null : unreadMessagesCount, // Update this as per your logic
+                read: lastMessage && lastMessage.read !== undefined ? lastMessage.read : null,
+                delivered : lastMessage && lastMessage.delivered !== undefined ? lastMessage.delivered : null,
+                lastMessage: lastMessage ? {
+                    content: decryptMessage(lastMessage.content),
+                    timestamp: lastMessage.timestamp,
+                    from: lastMessage.from
+                } : null
+            });
+        }
+        // Sort usersWithLastMessages based on the most recent message timestamp
+        usersWithLastMessages.sort((a, b) => {
+            if (a.lastMessage && b.lastMessage) {
+                return new Date(b.lastMessage.timestamp) - new Date(a.lastMessage.timestamp);
+            } else if (a.lastMessage) {
+                return -1; // a has a message but b doesn't
+            } else if (b.lastMessage) {
+                return 1; // b has a message but a doesn't
+            } else {
+                return 0; // both don't have messages
+            }
+        });
+       // console.log(usersWithLastMessages)
+        // Render admin chat page with users and their last messages
+        res.render('adminChat', {
+            name: username,
+            users: usersWithLastMessages 
+        });
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).send('Internal server error');
+    }
+});
+
+// Register a Handlebars helper to truncate message content
+hbs.registerHelper('truncateMessage', function(content, maxLength) {
+    if (content.length > maxLength) {
+        return content.substring(0, maxLength) + '...';
+    } else {
+        return content;
+    }
+});
+// Assuming you have an instance of Handlebars named `hbs`
+hbs.registerHelper('isAdminMessage', function(sender) {
+    //console.log("Sender: ",sender);
+    if (sender === 'admin')
+    {
+        return true
+    }
+    else{
+    return false
+    }
+});
+
+app.post("/tick", async (req, res) => {
+    try {
+        const { content, sender, recipient, timestamp } = req.body;
+        const presentTime = new Date();
+        const adminUser = await User.findOne({ role: "admin" });
+        
+        console.log(`${encryptMessage(content)} ${sender} ${recipient} ${timestamp}`)
+        let actualSender = sender;
+        let actualRecipient = recipient;
+        
+        // Adjust actualSender and actualRecipient if sender or recipient is 'admin'
+        if (sender === "admin") {
+            actualSender = adminUser.name;
+        } 
+        if (recipient === "admin") {
+            actualRecipient = adminUser.name;
+        }
+        
+        // Fetch recipient's login and logout times
+        const recipientInfo = await User.findOne({ name: actualRecipient });
+        console.log(actualRecipient, "ko",recipientInfo)
+        if (!recipientInfo) {
+           console.log("one",actualRecipient)
+            return res.status(404).json({ error: "Recipient not found" });
+        }
+        
+        const loginTime = recipientInfo.lastLogin ? new Date(recipientInfo.lastLogin) : null;
+        const logoutTime = recipientInfo.lastLogout ? new Date(recipientInfo.lastLogout) : null;
+        
+        // Check if the recipient has necessary login/logout times
+        if (loginTime && !logoutTime) {
+           // console.log("false")
+            return res.json({ delivered: false, read: false });
+        }
+        
+        // Find the message based on sender, recipient, content, and timestamp
+        const msg = await Message.findOne({ from: sender, to: recipient, content: content, timestamp: timestamp });
+       // console.log("msg",msg)
+        // If message not found, return 404 error
+        if (!msg) {
+            return res.status(404).json({ error: "Message not found" });
+        }
+        
+        // Update delivered status if necessary
+        if (loginTime && logoutTime) {
+          //  console.log("iii",msg.delivered,msg.read)
+            if(msg.delivered=== false){
+                msg.delivered = loginTime > logoutTime && loginTime < presentTime;
+            await msg.save();
+            }
+        }
+        console.log(msg.delivered,msg.read)
+        // Return the delivery and read status of the message
+        return res.json({ delivered: msg.delivered, read: msg.read });
+        
+    } catch (err) {
+        console.log("Error (delivery): ", err);
+        return res.status(500).json({ error: "Internal Server Error" });
+    }
+});
+
+// Helper function to format date
+hbs.registerHelper('formatDate', function (dateStr) {
+    //console.log("Date: ",dateStr);
+    if(dateStr===null)
+    {
+        return "";
+    }
+    const date = new Date(dateStr);
+    //console.log("Date: ",dateStr);
+    const today = new Date();
+    const yesterday = new Date(today);
+    yesterday.setDate(today.getDate() - 1);
+
+    const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+
+    if (date.toDateString() === today.toDateString()) {
+        
+        return new Date(dateStr).toLocaleTimeString('en-US', { 
+            hour12: true,
+            hour: '2-digit',
+            minute: '2-digit'});;
+    } else if (date.toDateString() === yesterday.toDateString()) {
+        return 'Yesterday';
+    } else if (date >= new Date(today.getFullYear(), today.getMonth(), today.getDate() - 7)) {
+        // For dates within the last 7 days
+        return daysOfWeek[date.getDay()];
+    } else {
+        // Format date as DD-MM-YYYY
+        return date.toLocaleDateString('en-GB');
+    }
 })
+
+app.get("/userChat/:name", async (req, res) => {
+    const username = req.params.name;
+    const sname = req.session.userName;
+    if(!username || ! sname ||(username !== sname))
+    {
+        return res.redirect('/signin')
+    }
+    try {
+        // Assuming you have a User model defined with Mongoose
+        const user = await User.findOne({ name: username });
+
+        if (!user || user.role === "admin") {
+            // Handle case where user is not found in the database
+            return res.status(404).send('User not found');
+        }
+        
+        // Example logic to count unread messages
+        const unreadMessagesCount = await Message.countDocuments({
+            from: "admin",
+            to: username,
+            read: false  // Assuming there's a 'read' field in Message schema
+        });
+
+        // Example: Fetching messages associated with the user
+        // Adjust this based on your schema structure
+        const messages = user.messages; // Assuming messages is an array of messages
+
+        // Render the userChat view and pass data to it
+        res.render("userChat", { name: username, messages, unreadCount: unreadMessagesCount });
+    } catch (error) {
+        console.error('Error fetching user:', error);
+        res.status(500).send('Internal server error');
+    }
+});
+
+app.get('/users', async (req, res) => {
+    const username = await User.findOne({role: "admin"});
+    const sname = req.session.userName;
+    if(!username || ! sname ||(username.name !== sname))
+    {
+        return res.redirect('/signin')
+    }
+    try {
+        const users = await User.find({ role: { $ne: 'admin' } });
+        res.json(users);
+    } catch (err) {
+        console.error('Error fetching users:', err);
+        res.status(500).json({ error: 'Failed to fetch users' });
+    }
+});
+
 
 
 app.get("/profile/:name", async (req, res) => {
     const uname = req.session.userName;
+    console.log(req.session.userName,"s",req.params.name)
     if (!uname) {
+        
+           console.log("hi")
+            return res.redirect('/signin');
+        
+    }
+    else if(uname !== req.params.name){
         return res.redirect('/signin');
     }
     const name = req.params.name;
@@ -837,9 +1470,9 @@ app.get("/profile/:name", async (req, res) => {
         if (!user) {
             return res.status(404).send('User not found');
         }
-    
-        // Pass user data to the profile template
+         
         res.render('profile', { user });
+
     } catch (error) {
             console.error('Error fetching user:', error);
             res.status(500).send('Internal Server Error');
@@ -849,10 +1482,17 @@ app.get("/profile/:name", async (req, res) => {
 // User route
 app.get('/dataUser/:name', async (req, res) => {
     const uname = req.session.userName;
+    console.log(req.session.userName,"s",req.params.name)
     if (!uname) {
+        
+           console.log("hi")
+            return res.redirect('/signin');
+        
+    }
+    else if(uname !== req.params.name){
         return res.redirect('/signin');
     }
-    const name = req.params.name; // Assuming the user's name is passed as a query parameter
+   const name = req.params.name; // Assuming the user's name is passed as a query parameter
     if (!name) {
         return res.status(400).send('User name is required');
     }
@@ -928,18 +1568,44 @@ app.get('/dataUser/:name', async (req, res) => {
 //     });
 // });
 
-app.get('/logout', (req, res) => {
-    req.session.destroy((err) => {
-        if (err) {
-            return res.status(500).send('Could not log out.');
+app.get('/logout', async (req, res) => {
+    if (!req.session.userName) {
+        return res.status(400).send('No user logged in.');
+    }
+
+    const username = req.session.userName;
+
+    try {
+        const user = await User.findOne({ name: username });
+
+        if (!user) {
+            return res.status(404).send('User not found.');
         }
-        res.redirect('/');
-    });
+
+        // Update lastLogout time
+        user.lastLogout = new Date();
+
+        await user.save();
+
+        // Destroy the session
+        req.session.destroy((err) => {
+            if (err) {
+                return res.status(500).send('Could not log out.');
+            }
+            res.redirect('/');
+        });
+    } catch (error) {
+        res.status(500).send('Internal Server Error');
+    }
 });
 
+// in app.js (or similar)
+liveReloadServer.server.once("connection", () => {
+  setTimeout(() => {
+    liveReloadServer.refresh("/");
+  }, 100);
+});
 
-
-
-app.listen(3000, () => {
-    console.log("Port connected");
+server.listen(3000, () => {
+    console.log("Port 3000 connected");
 });

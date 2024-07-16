@@ -168,6 +168,11 @@
                 icon.removeClass('fa-eye-slash').addClass('fa-eye');
             }
         });
+        // Trim spaces in username field before form submission
+        $('#signInForm').submit(function() {
+            var username = $('#form3Example3').val().trim(); // Trim spaces
+            $('#form3Example3').val(username); // Update the field with trimmed value
+        });
     });
 </script>
 
