@@ -991,6 +991,12 @@
         if (msg.from === currentUser) {
             //const side = msg.to === 'admin' ? 'right' : 'left';
             appendMessageToChatBox(decryptedContent, to, side, tickImgSrc);
+            moveUserToTop(msg.sender, null,{
+                            from : msg.sender,
+                            to : msg.to,
+                            content: decryptedContent, // Assuming you want to display sent message content
+                            timestamp: new Date().toISOString(), // Assuming current timestamp for sent message
+                        });
         }
 
         // Update the unread badge for the specific user if the chat is not open
