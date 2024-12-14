@@ -563,7 +563,7 @@ app.post('/userForm', async (req, res) => {
         user.tab[tab].push(newFormEntry);
         await user.save();
 
-        sendEmail(user.email, "Submission status", `Hello ${user.name},\n\nYour form for ${tab} is successfully submitted!\n\nThank you for taking time to fill out this form\n\nHave a great day:)\n\nBest regards,\nThe SubmitMate Team`);
+        sendEmail(user.email, "Submission status", `Hello ${user.name},\n\nYour form for ${tab} is successfully submitted!\n\nThank you for taking time to fill out this form\n\nHave a great day:)\n\nBest regards,\nThe BiteForm Team`);
         console.log("Submission status")
         return res.render('user', { name, userData: JSON.stringify(user), feedbackForms: user.tab[tab], success: 'Form submitted successfully!' });
     } catch (error) {
