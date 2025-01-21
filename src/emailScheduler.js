@@ -12,10 +12,11 @@ const transporter = nodemailer.createTransport({
         pass: process.env.EMAIL_PASS
     }
 });
+
 // Function to send email with text and html options
 function sendEmail(receiver, subject, text, html) {
     let mailOptions = {
-        from: process.env.EMAIL_USER,
+        from: 'vcareyou.biteform@gmail.com',
         to: receiver,
         subject: subject,
         text: text // Default to text content

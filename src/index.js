@@ -5,7 +5,7 @@ const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
 const session = require('express-session');
 const MongoStore = require('connect-mongo');
-const dotenv = require('dotenv');
+require('dotenv').config();
 const {User,Message} = require('./mongodb');  // Updated import based on module.exports
 const moment = require('moment-timezone');
 const multer = require('multer'); // Import multer for file upload
@@ -21,8 +21,6 @@ liveReloadServer.watch(path.join(__dirname, 'public'));
 
 const { transporter, sendEmail } = require('./emailScheduler'); // Adjust the path as needed
 
-
-dotenv.config();
 
 const formLink = "https://biteform.onrender.com";
 
