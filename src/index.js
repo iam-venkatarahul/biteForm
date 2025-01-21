@@ -6,7 +6,7 @@ const bcrypt = require('bcrypt');
 const session = require('express-session');
 const MongoStore = require('connect-mongo');
 require('dotenv').config();
-const {User,Message} = require('./mongodb');  // Updated import based on module.exports
+const { User, Message } = require('./mongodb');  // Updated import based on module.exports
 const moment = require('moment-timezone');
 const multer = require('multer'); // Import multer for file upload
 const fs = require('fs');
@@ -47,7 +47,7 @@ cron.schedule('0 9,13,19 * * *', async () => { // Runs at 9 AM, 12 PM, and 7 PM 
         }
 
         // Send email with appropriate content (html or text)
-        sendEmail(user.email, subject, text,html);
+        sendEmail(user.email, subject, text, html);
         console.log("Tab active mail");
     });
 });
@@ -84,7 +84,7 @@ const uploadPath = path.join(__dirname, '../uploads');
 
 const connectLivereload = require("connect-livereload");
 app.use(connectLivereload());
-app.use('/uploads', express.static(uploadPath)); 
+app.use('/uploads', express.static(uploadPath));
 app.use(express.static(path.join(__dirname, '../public')));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
@@ -93,7 +93,7 @@ app.use(session({
     store: MongoStore.create({
         mongoUrl: 'mongodb+srv://vedhavarshiniy111:NkwsKNXYdpVzHsq9@people.vzfrxax.mongodb.net/LINKEDIN?retryWrites=true&w=majority&appName=People',
         collectionName: 'sessions'
-      }),
+    }),
     secret: 'jekskajdjsksksks',
     resave: false,
     saveUninitialized: false,
@@ -103,58 +103,57 @@ app.use(session({
 app.set('view engine', 'hbs');
 app.set('views', templatePath);
 
-app.get('/forgotPassword',(req,res)=>{
+app.get('/forgotPassword', (req, res) => {
     res.render('forgotPassword')
 })
 
 app.post('/forgot-password', async (req, res) => {
     try {
-        const  username  = req.body.username;
+        const username = req.body.username;
         const user = await User.findOne({ name: username });
         if (!user) {
             return res.status(404).json({ error: 'User not found' });
         }
-            return res.status(200).json({ email: user.email }); // Send email data as JSON
-        
+        return res.status(200).json({ email: user.email }); // Send email data as JSON
+
     }
-    catch(err)
-    {
-        res.status(500).json({error: "Internal server error"})
+    catch (err) {
+        res.status(500).json({ error: "Internal server error" })
     }
 })
 //const clipboardy = require('clipboardy');
 
 app.post('/sendResetCode/:name', async (req, res) => {
     try {
-      const { name } = req.params;
-      const { email } = req.body; // Retrieve email from the request body
-  
-      // Find the user by name or create a new user if they don't exist
-      let user = await User.findOneAndUpdate(
-        { name },
-        {},
-        { upsert: true, new: true }
-      );
-  
-      const resetCode = await generateResetCode(); // Implement your own random code generation logic
-      const expiryTime = new Date();
-      expiryTime.setMinutes(expiryTime.getMinutes() + 5); // Expiry time 5 minutes from now
-  
-      // Update user document with new reset code and expiry time
-      user.resetCode = resetCode;
-      user.codeExpiryTime = expiryTime;
-      await user.save(); // Save the updated user document to the database
-  
-      // Send reset code/token to the provided email
-      sendEmail(email, "Password Reset Request for Your BiteForm Account", `Hello ${name}, \n\nIt looks like you requested a password reset for your BiteForm account. To reset your password, use the following code: \n\n${resetCode} \n\nThis code will expire in 5 minutes for security reasons. If you did not request a password reset, please ignore this email. If you need further assistance, contact our support team at vcareyou.biteform@gmail.com.\n\nStay safe,\nThe BiteForm Team`);
-      console.log("Reset pwd request email")
-      res.status(200).json({ message: 'Reset code sent successfully' });
+        const { name } = req.params;
+        const { email } = req.body; // Retrieve email from the request body
+
+        // Find the user by name or create a new user if they don't exist
+        let user = await User.findOneAndUpdate(
+            { name },
+            {},
+            { upsert: true, new: true }
+        );
+
+        const resetCode = await generateResetCode(); // Implement your own random code generation logic
+        const expiryTime = new Date();
+        expiryTime.setMinutes(expiryTime.getMinutes() + 5); // Expiry time 5 minutes from now
+
+        // Update user document with new reset code and expiry time
+        user.resetCode = resetCode;
+        user.codeExpiryTime = expiryTime;
+        await user.save(); // Save the updated user document to the database
+
+        // Send reset code/token to the provided email
+        sendEmail(email, "Password Reset Request for Your BiteForm Account", `Hello ${name}, \n\nIt looks like you requested a password reset for your BiteForm account. To reset your password, use the following code: \n\n${resetCode} \n\nThis code will expire in 5 minutes for security reasons. If you did not request a password reset, please ignore this email. If you need further assistance, contact our support team at vcareyou.biteform@gmail.com.\n\nStay safe,\nThe BiteForm Team`);
+        console.log("Reset pwd request email")
+        res.status(200).json({ message: 'Reset code sent successfully' });
     } catch (error) {
-      console.error('Error sending reset code:', error);
-      res.status(500).json({ error: 'Internal server error' });
+        console.error('Error sending reset code:', error);
+        res.status(500).json({ error: 'Internal server error' });
     }
-  });
-  
+});
+
 async function generateResetCode() {
     // Generate a random 6-digit code
     return Math.floor(100000 + Math.random() * 900000).toString();
@@ -183,29 +182,29 @@ app.post('/verifyResetCode', async (req, res) => {
 app.get('/resetPassword', (req, res) => {
     const username = req.query.username;
     res.render('resetPassword', { username }); // Assuming EJS template, passing username to template
-  });
+});
 
 
-app.post('/resetPassword',async(req,res)=>{
-    try{
-    const name = req.body.username;
-    const newpassword = req.body.password;
+app.post('/resetPassword', async (req, res) => {
+    try {
+        const name = req.body.username;
+        const newpassword = req.body.password;
 
-    const user = await User.findOne({name})
-    if(!user){
-        return res.status(400).json({error: "User not found"});
+        const user = await User.findOne({ name })
+        if (!user) {
+            return res.status(400).json({ error: "User not found" });
+        }
+        const hashedPassword = await bcrypt.hash(newpassword, 10)
+        user.password = hashedPassword;
+        user.resetCode = undefined
+        user.codeExpiryTime = undefined
+        await user.save();
+        sendEmail(user.email, "Your BiteForm Password Has Been Successfully Reset", `Hello ${user.name}, \n\nWe wanted to let you know that your password for your BiteForm account associated with the email: ${user.email} has been successfully reset. You can now log in with your new password.\n\nIf you did not reset your password, please contact our support team immediately at vcareyou.biteform@gmail.com to secure your account.\n\nThank you for using BiteForm!\n\nBest regards,\nThe BiteForm Team`)
+        console.log("Reset pwd email")
+        res.status(200).json({ message: "Password updated successfully!" });
+
     }
-    const hashedPassword = await bcrypt.hash(newpassword,10)
-    user.password = hashedPassword;
-    user.resetCode=undefined
-    user.codeExpiryTime=undefined
-    await user.save();
-    sendEmail(user.email,"Your BiteForm Password Has Been Successfully Reset",`Hello ${user.name}, \n\nWe wanted to let you know that your password for your BiteForm account associated with the email: ${user.email} has been successfully reset. You can now log in with your new password.\n\nIf you did not reset your password, please contact our support team immediately at vcareyou.biteform@gmail.com to secure your account.\n\nThank you for using BiteForm!\n\nBest regards,\nThe BiteForm Team`)
-    console.log("Reset pwd email")
-    res.status(200).json({message: "Password updated successfully!"});
-
-    }
-    catch(error){
+    catch (error) {
         console.log(error);
         res.status(500).json({ error: "Internal Server Error" });
     }
@@ -217,65 +216,65 @@ app.get('/user/:name', async (req, res) => {
     if (!uname) {
         return res.redirect('/signin');
     }
-    else if(uname !== req.params.name){
+    else if (uname !== req.params.name) {
         return res.redirect("/signin")
     }
     const name = req.params.name;
     const user = await User.findOne({ name });
     if (!user) {
-      return res.status(404).send('User not found');
+        return res.status(404).send('User not found');
     }
     res.send(user);
-  });
-  
-  // Route to update phone number
-  app.post('/updatePhone/:name', async (req, res) => {
+});
+
+// Route to update phone number
+app.post('/updatePhone/:name', async (req, res) => {
     const { phone } = req.body;
     const name = req.params.name;
-  
+
     try {
-      const user = await User.findOneAndUpdate({ name }, { phone }, { new: true, upsert: true });
-      console.log(user)
-      await user.save()
-      res.status(200).send('Phone number updated successfully');
-      sendEmail(user.email,"Your Phone Number Has Been Successfully Updated",`Hello ${user.name},\n\nWe wanted to let you know that your phone number for your BiteForm account has been successfully updated to ${user.phone}.\n\nIf you did not update your number, please contact our support team immediately at vcareyou.biteform@gmail.com to secure your account.\n\nThank you for using BiteForm!\n\nBest regards,\nThe BiteForm Team`)
-      console.log("Phone num email")
+        const user = await User.findOneAndUpdate({ name }, { phone }, { new: true, upsert: true });
+        console.log(user)
+        await user.save()
+        res.status(200).send('Phone number updated successfully');
+        sendEmail(user.email, "Your Phone Number Has Been Successfully Updated", `Hello ${user.name},\n\nWe wanted to let you know that your phone number for your BiteForm account has been successfully updated to ${user.phone}.\n\nIf you did not update your number, please contact our support team immediately at vcareyou.biteform@gmail.com to secure your account.\n\nThank you for using BiteForm!\n\nBest regards,\nThe BiteForm Team`)
+        console.log("Phone num email")
     } catch (error) {
-      console.error('Error updating phone number:', error);
-      res.status(500).send('Internal Server Error');
+        console.error('Error updating phone number:', error);
+        res.status(500).send('Internal Server Error');
     }
-  });
-  
-  // Route to update password
-  app.post('/updatePassword/:name', async (req, res) => {
+});
+
+// Route to update password
+app.post('/updatePassword/:name', async (req, res) => {
     const { currentPassword, newPassword } = req.body;
     const name = req.params.name;
     console.log(name)
-  
+
     try {
-      const user = await User.findOne({ name });
-      if (!user) {
-        return res.status(404).send('User not found');
-      }
-  
-      const isMatch = await bcrypt.compare(currentPassword, user.password);
-      if (!isMatch) {
-        return res.status(401).send('Incorrect current password');
-      }
-  
-      const hashedPassword = await bcrypt.hash(newPassword, 10);
-      user.password = hashedPassword;
-      await user.save();
-  
-      
-      sendEmail(user.email,"Your BiteForm Password Has Been Successfully Updated",`Hello ${user.name}! \n\nWe wanted to let you know that the password for your BiteForm account associated with the email:  ${user.email} has been successfully updated.\n\nIf you did not reset your password, please contact our support team immediately at vcareyou.biteform@gmail.com to secure your account.\n\nThank you for using BiteForm!\n\nBest regards,\nThe BiteForm Team`)
-      console.log("Updated pwd email")
-      res.status(200).render('signin', { message: 'Password updated successfully' });
+        const user = await User.findOne({ name });
+        if (!user) {
+            return res.status(404).send('User not found');
+        }
+
+        const isMatch = await bcrypt.compare(currentPassword, user.password);
+        if (!isMatch) {
+            return res.status(401).send('Incorrect current password');
+        }
+
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+        user.password = hashedPassword;
+        await user.save();
+
+
+        sendEmail(user.email, "Your BiteForm Password Has Been Successfully Updated", `Hello ${user.name}! \n\nWe wanted to let you know that the password for your BiteForm account associated with the email:  ${user.email} has been successfully updated.\n\nIf you did not reset your password, please contact our support team immediately at vcareyou.biteform@gmail.com to secure your account.\n\nThank you for using BiteForm!\n\nBest regards,\nThe BiteForm Team`)
+        console.log("Updated pwd email")
+        res.status(200).render('signin', { message: 'Password updated successfully' });
     } catch (error) {
-      console.error('Error updating password:', error);
-      res.status(500).send('Internal Server Error');
+        console.error('Error updating password:', error);
+        res.status(500).send('Internal Server Error');
     }
-  });
+});
 
 
 app.get("/", (req, res) => {
@@ -308,15 +307,14 @@ app.post('/signup', async (req, res) => {
     if (checkEmail) {
         return res.render('signup', { error: 'Email already registered' });
     }
-    if(role==="admin")
-        {
-            res.render('signup',{error:"You cannot be an admin!"})
-        }
-    else{
+    if (role === "admin") {
+        res.render('signup', { error: "You cannot be an admin!" })
+    }
+    else {
         // Create the user
-        await User.create({ name, email, password: hashedPassword, role , tab: { breakfast: [], lunch: [], supper: [] }});
-        sendEmail("vcareyou.biteform@gmail.com","New user registration",`A new user with name ${name} and email ${email} is registered!`)
-        sendEmail(email,"Registration successful",`Hello ${name},\nThank you for registering for this account. \n\nWe are excited to have you join our community.Your registration has been successfully completed, and you can now enjoy all the features and benefits we offer.🎉🎉\n\nAdditionally, please note our meal timings for filling the forms:\n\n▪️Breakfast: 9 AM to 12 PM\n▪️Lunch: 1 PM to 4 PM\n▪️Supper: 7 PM to 11 PM\n\nYou can fill the form during these timings.\n\nBest regards,\nThe BiteForm Team`)
+        await User.create({ name, email, password: hashedPassword, role, tab: { breakfast: [], lunch: [], supper: [] } });
+        sendEmail("vcareyou.biteform@gmail.com", "New user registration", `A new user with name ${name} and email ${email} is registered!`)
+        sendEmail(email, "Registration successful", `Hello ${name},\nThank you for registering for this account. \n\nWe are excited to have you join our community.Your registration has been successfully completed, and you can now enjoy all the features and benefits we offer.🎉🎉\n\nAdditionally, please note our meal timings for filling the forms:\n\n▪️Breakfast: 9 AM to 12 PM\n▪️Lunch: 1 PM to 4 PM\n▪️Supper: 7 PM to 11 PM\n\nYou can fill the form during these timings.\n\nBest regards,\nThe BiteForm Team`)
         console.log("Registration mail")
         // Render success message
         res.render('signup', { success: 'Account created successfully!' });
@@ -333,7 +331,7 @@ app.post('/signin', async (req, res) => {
         const { name, password, role } = req.body;
         const user = await User.findOne({ name });
 
-        if (!user ) {
+        if (!user) {
             return res.render('signin', { error: 'Incorrect details' });
         }
 
@@ -349,15 +347,15 @@ app.post('/signin', async (req, res) => {
         if (role === 'user') {
             const msgs = await Message.find(
                 { to: name, delivered: false });
-                //console.log(msgs,"msgs User")
+            //console.log(msgs,"msgs User")
             const updateResult = await Message.updateMany(
                 { to: name, delivered: false },
                 { $set: { delivered: true } }
             );
-            
+
             //console.log(`Updated ${updateResult} messages for admin`);
             // Emit event to notify clients (users) about message delivery update
-            io.emit('UserLoggedIn',name);
+            io.emit('UserLoggedIn', name);
             return res.redirect('/user');
         } else if (role === 'admin') {
             if (user.role !== 'admin') {
@@ -365,18 +363,18 @@ app.post('/signin', async (req, res) => {
             }
             const msgs = await Message.find(
                 { to: 'admin', delivered: false });
-                console.log(msgs,"msgs")
+            console.log(msgs, "msgs")
             const updateResult = await Message.updateMany(
                 { to: 'admin', delivered: false },
                 { $set: { delivered: true } }
             );
-            
+
             console.log(`Updated ${updateResult} messages for admin`);
             // Emit event to notify clients (users) about message delivery update
             io.emit('adminLoggedIn');
-            const unreadCount = await User.countDocuments({to: "admin", read: false})
-            io.emit('ur',unreadCount)
-            
+            const unreadCount = await User.countDocuments({ to: "admin", read: false })
+            io.emit('ur', unreadCount)
+
             return res.redirect('/admin');
         } else {
             return res.status(400).send('Invalid role');
@@ -395,7 +393,7 @@ const isAuthenticated = (req, res, next) => {
     next();
 };
 // Register a Handlebars helper for URL encoding
-hbs.registerHelper('urlEncode', function(value) {
+hbs.registerHelper('urlEncode', function (value) {
     return encodeURIComponent(value);
 });
 
@@ -408,7 +406,7 @@ app.get('/user', isAuthenticated, async (req, res) => {
     }
     try {
         const user = await User.findOne({ name });
-        if (!user || user.role !=="user") {
+        if (!user || user.role !== "user") {
             return res.status(404).send('User not found');
         }
 
@@ -419,16 +417,17 @@ app.get('/user', isAuthenticated, async (req, res) => {
         const unreadMessagesCount = await Message.countDocuments({
             from: "admin",
             to: user.name,
-            read: false , // Assuming there's a 'read' field in Message schema
+            read: false, // Assuming there's a 'read' field in Message schema
         });
         // Update lastLogout time
         user.lastLogin = new Date();
         await user.save();
 
         await Message.updateMany(
-            { from: "admin",
+            {
+                from: "admin",
                 to: user.name,
-                delivered: false 
+                delivered: false
             }, // Filter criteria: unread messages to 'username'
             { $set: { delivered: true } }      // Update: set 'read' to true
         );
@@ -438,8 +437,8 @@ app.get('/user', isAuthenticated, async (req, res) => {
             feedbackSchema: user.tab,
             storedTabStates: storedTabStates,
             noCustomWallpaper: noCustomWallpaper,
-          //  delivered:delivered,
-            unreadCount: unreadMessagesCount===0 ? null:unreadMessagesCount
+            //  delivered:delivered,
+            unreadCount: unreadMessagesCount === 0 ? null : unreadMessagesCount
         });
     } catch (error) {
         console.error('Error fetching user:', error);
@@ -528,7 +527,7 @@ app.post('/userForm', async (req, res) => {
 
         if (!currentTime.isBetween(startTime, endTime)) {
             //return res.status(400).send(`Form for ${tab} can only be submitted between ${start} and ${end} IST`);
-            return res.render('user',{error:`Form for ${tab} can only be submitted between ${start} and ${end} IST`})
+            return res.render('user', { error: `Form for ${tab} can only be submitted between ${start} and ${end} IST` })
         }
 
         // Check if the user has already submitted the form for the given tab today
@@ -571,316 +570,316 @@ app.post('/userForm', async (req, res) => {
 });
 
 const { GridFsStorage } = require('multer-gridfs-storage');
-const mongoURI="mongodb+srv://vedhavarshiniy111:NkwsKNXYdpVzHsq9@people.vzfrxax.mongodb.net/LINKEDIN?retryWrites=true&w=majority&appName=People";
+const mongoURI = "mongodb+srv://vedhavarshiniy111:NkwsKNXYdpVzHsq9@people.vzfrxax.mongodb.net/LINKEDIN?retryWrites=true&w=majority&appName=People";
 // Connect to MongoDB
 mongoose.connect(mongoURI, {
     useNewUrlParser: true,
     useUnifiedTopology: true
-  })
-  .then(() => {
-    console.log('MongoDB Grid fs connected');
-  })
-  .catch(err => {
-    console.error('MongoDB connection error:', err);
-    process.exit(1); // Exit process on connection failure
-  });
- 
+})
+    .then(() => {
+        console.log('MongoDB Grid fs connected');
+    })
+    .catch(err => {
+        console.error('MongoDB connection error:', err);
+        process.exit(1); // Exit process on connection failure
+    });
+
 // Initialize GridFS
 let gfs;
 let gfsAvatars;
 
 mongoose.connection.once('open', () => {
-  gfs = new mongoose.mongo.GridFSBucket(mongoose.connection.db, {
-    bucketName: 'li_wallpapers'
-  });
-  gfsAvatars = new mongoose.mongo.GridFSBucket(mongoose.connection.db, {
-    bucketName: 'li_avatars'
-  });
+    gfs = new mongoose.mongo.GridFSBucket(mongoose.connection.db, {
+        bucketName: 'li_wallpapers'
+    });
+    gfsAvatars = new mongoose.mongo.GridFSBucket(mongoose.connection.db, {
+        bucketName: 'li_avatars'
+    });
 });
 
 const storage = new GridFsStorage({
     url: mongoURI,
     file: async (req, file) => {
-      const username = req.params.name;
-      const fileExtension = path.extname(file.originalname);
-      const filename = `${username}_wallpaper${fileExtension}`;
-  
-      try {
-        // Check if a file with the same filename exists in GridFS
-        const existingFiles = await gfs.find({ filename: new RegExp(`^${username}_wallpaper`) }).toArray();
-        if(existingFiles){
-        for (const existingFile of existingFiles) {
-            await gfs.delete(existingFile._id);
-        }}
-      } catch (error) {
-        console.error('Error deleting existing files:', error);
-      }
-      console.log(filename);
-      return {
-        filename: filename,
-        
-        bucketName: 'li_wallpapers' // Store wallpapers in a separate collection
-      };
+        const username = req.params.name;
+        const fileExtension = path.extname(file.originalname);
+        const filename = `${username}_wallpaper${fileExtension}`;
+
+        try {
+            // Check if a file with the same filename exists in GridFS
+            const existingFiles = await gfs.find({ filename: new RegExp(`^${username}_wallpaper`) }).toArray();
+            if (existingFiles) {
+                for (const existingFile of existingFiles) {
+                    await gfs.delete(existingFile._id);
+                }
+            }
+        } catch (error) {
+            console.error('Error deleting existing files:', error);
+        }
+        console.log(filename);
+        return {
+            filename: filename,
+
+            bucketName: 'li_wallpapers' // Store wallpapers in a separate collection
+        };
     }
-  });
-  
-  const upload = multer({ storage });
+});
+
+const upload = multer({ storage });
 // POST endpoint to handle wallpaper upload
 app.post('/update-wallpaper/:name', upload.single('wallpaper'), async (req, res) => {
     try {
-      const username = req.params.name;
-      const fileExtension = path.extname(req.file.originalname);
-      const filename = `${username}_wallpaper${fileExtension}`;
-      const wallpaperPath = `/li_wallpapers/${filename}`; // Path accessible from the frontend
-    // Update the wallpaper path for the user in the database
-    const updatedUser = await User.findOneAndUpdate(
-        { name: username },
-        { wallpaper: wallpaperPath },
-        { new: true }
-    );
-    await updatedUser.save();
+        const username = req.params.name;
+        const fileExtension = path.extname(req.file.originalname);
+        const filename = `${username}_wallpaper${fileExtension}`;
+        const wallpaperPath = `/li_wallpapers/${filename}`; // Path accessible from the frontend
+        // Update the wallpaper path for the user in the database
+        const updatedUser = await User.findOneAndUpdate(
+            { name: username },
+            { wallpaper: wallpaperPath },
+            { new: true }
+        );
+        await updatedUser.save();
 
-   // console.log(updatedUser)
-      if (!updatedUser) {
-        return res.status(404).send('User not found');
-      }
-  
-      // Send response with username and fileExtension
-      res.json({ username, fileExtension });
+        // console.log(updatedUser)
+        if (!updatedUser) {
+            return res.status(404).send('User not found');
+        }
+
+        // Send response with username and fileExtension
+        res.json({ username, fileExtension });
     } catch (error) {
-      console.error('Error uploading wallpaper:', error);
-      return res.status(500).send('Internal Server Error');
+        console.error('Error uploading wallpaper:', error);
+        return res.status(500).send('Internal Server Error');
     }
-  });
-  app.get('/wallpaper/:username', async (req, res) => {
+});
+app.get('/wallpaper/:username', async (req, res) => {
     const username = req.params.username;
-  
-    try {
-      const user = await User.findOne({ name: username });
-      if (!user) {
-        return res.status(404).json({ error: 'User not found' });
-      }
-      
-      // Check if user.wallpaper is valid
-    if (!user.wallpaper) {
-        return res.status(404).json({ error: 'Wallpaper not found' });
-      }
 
-      const filename = `${username}_wallpaper${path.extname(user.wallpaper)}`;
-      const files = await gfs.find({ filename }).toArray();
-      if (!files || files.length === 0) {
-        return res.status(404).json({ error: 'File not found' });
-      }
-  
-      const file = files[0];
-      const downloadStream = gfs.openDownloadStream(file._id);
-  
-      res.set('Content-Type', file.contentType);
-      downloadStream.pipe(res);
-    
+    try {
+        const user = await User.findOne({ name: username });
+        if (!user) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+
+        // Check if user.wallpaper is valid
+        if (!user.wallpaper) {
+            return res.status(404).json({ error: 'Wallpaper not found' });
+        }
+
+        const filename = `${username}_wallpaper${path.extname(user.wallpaper)}`;
+        const files = await gfs.find({ filename }).toArray();
+        if (!files || files.length === 0) {
+            return res.status(404).json({ error: 'File not found' });
+        }
+
+        const file = files[0];
+        const downloadStream = gfs.openDownloadStream(file._id);
+
+        res.set('Content-Type', file.contentType);
+        downloadStream.pipe(res);
+
     } catch (error) {
-      console.error('Error fetching wallpaper:', error);
-      return res.status(500).json({ error: 'Internal Server Error' });
+        console.error('Error fetching wallpaper:', error);
+        return res.status(500).json({ error: 'Internal Server Error' });
     }
-  });
+});
 
 // Endpoint to handle wallpaper deletion
 app.post('/delete-wallpaper/:username', async (req, res) => {
     const username = req.params.username;
-  
+
     try {
-      // Find user in database
-      const user = await User.findOne({ name: username });
-      if (!user) {
-        return res.status(404).json({ error: 'User not found' });
-      }
-      
-      // Check if user.wallpaper is valid
-    if (!user.wallpaper) {
-        return res.status(404).json({ error: 'Wallpaper not found' });
-      }
-      
-      // Construct filename from user data
-      const filename = `${username}_wallpaper${path.extname(user.wallpaper)}`;
-      console.log(filename)
-      // Check if file exists in GridFS
-      const file = await gfs.find({ filename }).toArray();
-      if (!file || file.length === 0) {
-        return res.status(404).json({ error: 'File not found' });
-      }
-  
-      // Delete the file from GridFS
-      for (const fileObj of file) {
-        await gfs.delete(fileObj._id);
-      }
-  
-      // Remove wallpaper path from the user in the database
-      user.wallpaper = null;
-      await user.save();
-  
-      res.json({ success: true, username });
+        // Find user in database
+        const user = await User.findOne({ name: username });
+        if (!user) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+
+        // Check if user.wallpaper is valid
+        if (!user.wallpaper) {
+            return res.status(404).json({ error: 'Wallpaper not found' });
+        }
+
+        // Construct filename from user data
+        const filename = `${username}_wallpaper${path.extname(user.wallpaper)}`;
+        console.log(filename)
+        // Check if file exists in GridFS
+        const file = await gfs.find({ filename }).toArray();
+        if (!file || file.length === 0) {
+            return res.status(404).json({ error: 'File not found' });
+        }
+
+        // Delete the file from GridFS
+        for (const fileObj of file) {
+            await gfs.delete(fileObj._id);
+        }
+
+        // Remove wallpaper path from the user in the database
+        user.wallpaper = null;
+        await user.save();
+
+        res.json({ success: true, username });
     } catch (error) {
-      console.error('Error deleting wallpaper:', error);
-      return res.status(500).json({ error: 'Internal Server Error' });
+        console.error('Error deleting wallpaper:', error);
+        return res.status(500).json({ error: 'Internal Server Error' });
     }
-  });
+});
 
 
 // GridFSStorage configuration for avatars
 const storageAvatars = new GridFsStorage({
-  url: mongoURI,
-  file: async (req, file) => {
-    const username = req.params.username;
-    const fileExtension = path.extname(file.originalname);
-    const filename = `${username}_avatar${fileExtension}`;
-    console.log(username, filename);
+    url: mongoURI,
+    file: async (req, file) => {
+        const username = req.params.username;
+        const fileExtension = path.extname(file.originalname);
+        const filename = `${username}_avatar${fileExtension}`;
+        console.log(username, filename);
 
-    try {
-      // Check if a file with the same filename exists in GridFS (avatars)
-      const existingFiles = await gfsAvatars.find({ filename: new RegExp(`^${username}_avatar`) }).toArray();
-      for (const existingFile of existingFiles) {
-        await gfsAvatars.delete(existingFile._id);
-      }
-    } catch (error) {
-      console.error('Error deleting existing avatar files:', error);
+        try {
+            // Check if a file with the same filename exists in GridFS (avatars)
+            const existingFiles = await gfsAvatars.find({ filename: new RegExp(`^${username}_avatar`) }).toArray();
+            for (const existingFile of existingFiles) {
+                await gfsAvatars.delete(existingFile._id);
+            }
+        } catch (error) {
+            console.error('Error deleting existing avatar files:', error);
+        }
+
+        return {
+            filename: filename,
+            bucketName: 'li_avatars', // Store avatars in 'avatars' collection
+            metadata: {
+                username: username, // Store username in metadata
+            },
+        };
     }
-
-    return {
-      filename: filename,
-      bucketName: 'li_avatars', // Store avatars in 'avatars' collection
-      metadata: {
-        username: username, // Store username in metadata
-      },
-    };
-  }
 });
 
 const uploadAvatar = multer({ storage: storageAvatars });
 
 // POST endpoint for uploading avatar
 app.post('/uploadProfilePhoto/:username', uploadAvatar.single('avatar'), async (req, res) => {
-  try {
-    if (!req.file) {
-      return res.status(400).json({ error: 'No file uploaded.' });
-    }
-
-    const extension = path.extname(req.file.originalname);
-    const filename = `${req.params.username}_avatar${extension}`;
-    console.log(req.params.username, "post", filename);
-
-    // Handle file upload to GridFS (avatars)
-    const writeStream = gfsAvatars.openUploadStream(filename, {
-      contentType: req.file.mimetype,
-      metadata: {
-        username: req.params.username, // Store username in metadata
-      },
-    });
-
-    writeStream.end(req.file.buffer);
-
-    writeStream.on('finish', async () => {
-      try {
-        // Update user with new avatar filename
-        const user = await User.findOneAndUpdate(
-          { name: req.params.username },
-          { avatar: filename }, // Store filename or metadata instead of fileId
-          { new: true }
-        );
-
-        if (!user) {
-          return res.status(404).json({ error: 'User not found.' });
+    try {
+        if (!req.file) {
+            return res.status(400).json({ error: 'No file uploaded.' });
         }
 
-        console.log('User details:', user);
+        const extension = path.extname(req.file.originalname);
+        const filename = `${req.params.username}_avatar${extension}`;
+        console.log(req.params.username, "post", filename);
 
-        // Find and delete files with the same username and zero length
-        const zeroLengthFiles = await gfsAvatars.find({ 
-          'metadata.username': req.params.username, 
-          length: { $eq: 0 } 
-        }).toArray();
+        // Handle file upload to GridFS (avatars)
+        const writeStream = gfsAvatars.openUploadStream(filename, {
+            contentType: req.file.mimetype,
+            metadata: {
+                username: req.params.username, // Store username in metadata
+            },
+        });
 
-        for (const file of zeroLengthFiles) {
-          await gfsAvatars.delete(file._id);
-          console.log(`Deleted zero-length file: ${file.filename}`);
-        }
+        writeStream.end(req.file.buffer);
 
-        res.json({ fileId: writeStream.id });
-      } catch (err) {
-        console.error('Error updating user with avatar:', err);
+        writeStream.on('finish', async () => {
+            try {
+                // Update user with new avatar filename
+                const user = await User.findOneAndUpdate(
+                    { name: req.params.username },
+                    { avatar: filename }, // Store filename or metadata instead of fileId
+                    { new: true }
+                );
+
+                if (!user) {
+                    return res.status(404).json({ error: 'User not found.' });
+                }
+
+                console.log('User details:', user);
+
+                // Find and delete files with the same username and zero length
+                const zeroLengthFiles = await gfsAvatars.find({
+                    'metadata.username': req.params.username,
+                    length: { $eq: 0 }
+                }).toArray();
+
+                for (const file of zeroLengthFiles) {
+                    await gfsAvatars.delete(file._id);
+                    console.log(`Deleted zero-length file: ${file.filename}`);
+                }
+
+                res.json({ fileId: writeStream.id });
+            } catch (err) {
+                console.error('Error updating user with avatar:', err);
+                res.status(500).json({ error: err.message });
+            }
+        });
+    } catch (err) {
+        console.error('Error uploading avatar:', err);
         res.status(500).json({ error: err.message });
-      }
-    });
-  } catch (err) {
-    console.error('Error uploading avatar:', err);
-    res.status(500).json({ error: err.message });
-  }
+    }
 });
 
 app.delete('/deleteProfilePhoto/:username', async (req, res) => {
     try {
-      const username = req.params.username;
-  
-      // Find the avatar file by username
-      const avatarFiles = await gfsAvatars.find({ 'metadata.username': username }).toArray();
-  
-      if (!avatarFiles || avatarFiles.length === 0) {
-        return res.status(404).json({ error: 'Avatar not found.' });
-      }
-  
-      // Delete all found avatar files
-      for (const file of avatarFiles) {
-        await gfsAvatars.delete(file._id);
-        console.log(`Deleted avatar file: ${file.filename}`);
-      }
-  
-      // Update user document to remove avatar reference
-      const user = await User.findOneAndUpdate(
-        { name: username },
-        { $unset: { avatar: "" } }, // Remove avatar field from user document
-        { new: true }
-      );
-  
-      if (!user) {
-        return res.status(404).json({ error: 'User not found.' });
-      }
-  
-      console.log('User details updated:', user);
-      res.json({ message: 'Avatar deleted successfully.' });
+        const username = req.params.username;
+
+        // Find the avatar file by username
+        const avatarFiles = await gfsAvatars.find({ 'metadata.username': username }).toArray();
+
+        if (!avatarFiles || avatarFiles.length === 0) {
+            return res.status(404).json({ error: 'Avatar not found.' });
+        }
+
+        // Delete all found avatar files
+        for (const file of avatarFiles) {
+            await gfsAvatars.delete(file._id);
+            console.log(`Deleted avatar file: ${file.filename}`);
+        }
+
+        // Update user document to remove avatar reference
+        const user = await User.findOneAndUpdate(
+            { name: username },
+            { $unset: { avatar: "" } }, // Remove avatar field from user document
+            { new: true }
+        );
+
+        if (!user) {
+            return res.status(404).json({ error: 'User not found.' });
+        }
+
+        console.log('User details updated:', user);
+        res.json({ message: 'Avatar deleted successfully.' });
     } catch (err) {
-      console.error('Error deleting avatar:', err);
-      res.status(500).json({ error: err.message });
+        console.error('Error deleting avatar:', err);
+        res.status(500).json({ error: err.message });
     }
-  });
+});
 
 // GET endpoint for retrieving avatar by username
 app.get('/avatar/:username', async (req, res) => {
     try {
-      const username = req.params.username;
-  
-      // Find all avatar files with matching username and non-zero length
-      const avatarFiles = await gfsAvatars.find({ 'metadata.username': username }).toArray();
-      //console.log(avatarFiles.length)
-      if (avatarFiles && avatarFiles.length > 0) {
-        // Assuming there's only one avatar per username, retrieve the first one
-        const readStream = gfsAvatars.openDownloadStream(avatarFiles[0]._id);
-        readStream.pipe(res);
-        console.log("Avatar found!");
+        const username = req.params.username;
+
+        // Find all avatar files with matching username and non-zero length
+        const avatarFiles = await gfsAvatars.find({ 'metadata.username': username }).toArray();
+        //console.log(avatarFiles.length)
+        if (avatarFiles && avatarFiles.length > 0) {
+            // Assuming there's only one avatar per username, retrieve the first one
+            const readStream = gfsAvatars.openDownloadStream(avatarFiles[0]._id);
+            readStream.pipe(res);
+            console.log("Avatar found!");
         }
-        else{
+        else {
             //console.error('Error retrieving avatar: No avatar found for username', username);
             res.status(500).json({ error: 'No avatar found' });
         }
-    }catch (err) {
+    } catch (err) {
         console.log("Error")
-      console.error('Error retrieving avatar:', err);
-      res.status(500).json({ error: err.message });
+        console.error('Error retrieving avatar:', err);
+        res.status(500).json({ error: err.message });
     }
 });
-  
+
 // Register Handlebars helper function to format date
 hbs.registerHelper('formatDateTS', function (timestamp) {
-    if(timestamp)
-    {
+    if (timestamp) {
         return moment(timestamp).tz('Asia/Kolkata').format('YYYY-MM-DD HH:mm:ss');
     }
     return null;
@@ -893,12 +892,12 @@ hbs.registerHelper('eq', function (a, b) {
 
 app.get('/admin', async (req, res) => {
     const name = req.session.userName;
-    
-    const user = await User.findOne({name: name,role:"admin"})
-    if(!user){
+
+    const user = await User.findOne({ name: name, role: "admin" })
+    if (!user) {
         return res.redirect("/signin")
     }
-    if(name !== user.name){
+    if (name !== user.name) {
         return res.redirect("/signin")
     }
     user.lastLogin = new Date()
@@ -952,10 +951,11 @@ app.get('/admin', async (req, res) => {
             read: false  // Assuming there's a 'read' field in Message schema
         });
 
-        res.render('admin', { admin:name, groupedUsers,
+        res.render('admin', {
+            admin: name, groupedUsers,
             unreadCount: unreadMessagesCount === 0 ? null : unreadMessagesCount
-         });
-         
+        });
+
     } catch (error) {
         console.error('Error fetching non-admin users:', error);
         res.status(500).send('Internal Server Error');
@@ -986,16 +986,15 @@ function decryptMessage(ciphertext) {
 // Route to handle sending messages
 app.post('/sendMessage', async (req, res) => {
     try {
-        let { sender, recipient, content ,timestamp } = req.body;
+        let { sender, recipient, content, timestamp } = req.body;
         let user
         console.log(recipient)
         //console.log("recipient: ",recipient)
-        if(recipient === "admin")
-        {
-            user = await User.findOne({role: "admin"});
+        if (recipient === "admin") {
+            user = await User.findOne({ role: "admin" });
         }
-        else{
-            user = await User.findOne({name: recipient});
+        else {
+            user = await User.findOne({ name: recipient });
         }
         //console.log(user)
         const presentTime = new Date()
@@ -1006,32 +1005,32 @@ app.post('/sendMessage', async (req, res) => {
         // console.log("Delivered: ",delivered)
         let delivered = false;
 
-            if (loginTime && logoutTime || loginTime) {
-                delivered = loginTime > logoutTime && loginTime < presentTime;
-            } else {
-                console.log("No login and logout timings ")
-            }
+        if (loginTime && logoutTime || loginTime) {
+            delivered = loginTime > logoutTime && loginTime < presentTime;
+        } else {
+            console.log("No login and logout timings ")
+        }
 
-            console.log(`Present Time: ${presentTime}`);
-            console.log(`User's Last Login: ${loginTime}`);
-            console.log(`User's Last Logout: ${logoutTime}`);
-            console.log(`Message Delivered: ${delivered}`);
+        console.log(`Present Time: ${presentTime}`);
+        console.log(`User's Last Login: ${loginTime}`);
+        console.log(`User's Last Logout: ${logoutTime}`);
+        console.log(`Message Delivered: ${delivered}`);
 
         // Save the encrypted message to MongoDB
         const message = new Message({
             from: sender,
             to: recipient,
-            content:  content,
+            content: content,
             delivered: delivered,
-            timestamp:timestamp
+            timestamp: timestamp
         });
 
         await message.save();
         //console.log(`Sender: ${sender} To: ${recipient} Msg: ${decryptMessage(content)}`)
         // Emit the message to the recipient via Socket.IO
-        if(recipient==="admin"){
+        if (recipient === "admin") {
             const adminUser = await User.findOne({ role: "admin" });
-            
+
             if (adminUser) {
                 recipient = adminUser.name; // You can assign adminUser directly if needed
                 console.log(`Admin: ${adminUser.name}`);
@@ -1040,24 +1039,23 @@ app.post('/sendMessage', async (req, res) => {
                 return; // Optionally, handle the case when no admin user is found
             }
         }
-        const admin = await User.findOne({role:"admin"})
+        const admin = await User.findOne({ role: "admin" })
         let unreadCount
-        if(recipient === admin.name)
-        {
-            unreadCount = await Message.countDocuments({to:"admin", read: false})
+        if (recipient === admin.name) {
+            unreadCount = await Message.countDocuments({ to: "admin", read: false })
         }
-        else{
-            unreadCount = await Message.countDocuments(({to:recipient, read:false}))
+        else {
+            unreadCount = await Message.countDocuments(({ to: recipient, read: false }))
         }
         //console.log(recipient,unreadCount)
         io.to(recipient).emit('receiveMessage', {
             sender: sender,
-            to:recipient,
+            to: recipient,
             content: content,
             timestamp: message.timestamp,
-            unreadCount :unreadCount === 0 ? null : unreadCount
+            unreadCount: unreadCount === 0 ? null : unreadCount
         });
-        
+
         res.status(200).send('Message sent successfully');
     } catch (error) {
         console.error('Error sending message:', error);
@@ -1073,7 +1071,7 @@ io.on('connection', async (socket) => {
     const { userName } = socket.handshake.query; // Assuming you pass userName as a query parameter
     socket.join(userName);
     console.log(`${userName} connected`);
-    
+
     // Handle disconnect
     socket.on('disconnect', () => {
         console.log(`${userName} disconnected`);
@@ -1081,16 +1079,15 @@ io.on('connection', async (socket) => {
 });
 app.get('/userMessages/:username', async (req, res) => {
     try {
-        const sname  = req.session.userName;
-         const   uname   = await User.findOne({role:"admin"})
-         if(!sname){
-             return res.redirect('/signin')
-         }
-        else if(sname !== uname.name)
-        {
+        const sname = req.session.userName;
+        const uname = await User.findOne({ role: "admin" })
+        if (!sname) {
+            return res.redirect('/signin')
+        }
+        else if (sname !== uname.name) {
             return res.redirect("/signin")
         }
-       //console.log("Username: ",`${username}`)
+        //console.log("Username: ",`${username}`)
         const username = req.params.username;
         // Check for exact match with potential trailing spaces
         const user = await User.findOne({ name: username });
@@ -1099,30 +1096,30 @@ app.get('/userMessages/:username', async (req, res) => {
             console.log("User not found:", `"${username}"`);
             return res.status(404).send('User not found');
         }
-       // console.log("Msgs name: ",username,"ll")
+        // console.log("Msgs name: ",username,"ll")
         const presentTime = new Date()
         const loginTime = new Date(user.lastLogin)
         const logoutTime = new Date(user.lastLogout)
         // const delivered = ((login < presentTime) && (logout > presentTime)) ? true: false;
-       // console.log(`${presentTime} ${user.lastLogin} ${user.lastLogout} ${loginTime} ${logoutTime}`)
+        // console.log(`${presentTime} ${user.lastLogin} ${user.lastLogout} ${loginTime} ${logoutTime}`)
         //console.log("Delivered: ",delivered)
-        
-            if (loginTime && logoutTime || loginTime) {
-                delivered = loginTime > logoutTime && loginTime < presentTime;
-               // console.log("Delivered: ",delivered)
-            } else {
-                console.log("No login and logout timings ")
-            }
+
+        if (loginTime && logoutTime || loginTime) {
+            delivered = loginTime > logoutTime && loginTime < presentTime;
+            // console.log("Delivered: ",delivered)
+        } else {
+            console.log("No login and logout timings ")
+        }
         // Find all messages where the sender is the specified user and recipient is 'Admin'
         const messages = await Message.find({ $or: [{ from: username, to: 'admin' }, { from: 'admin', to: username }] });
-        console.log(messages,"msgs")
-        const unreadMessages = await Message.find({to: "admin", read : "false"})
+        console.log(messages, "msgs")
+        const unreadMessages = await Message.find({ to: "admin", read: "false" })
         console.log(unreadMessages)
         await Message.updateMany(
             { from: username, to: 'admin', read: false }, // Filter criteria: unread messages to 'username'
             { $set: { read: true } }      // Update: set 'read' to true
         );
-        const admin =  await User.findOne({role:"admin"})
+        const admin = await User.findOne({ role: "admin" })
         //console.log(admin.name,"AN")
         // Emit 'AdminRead' to the user and the admin
         io.to(username).emit('AdminRead', username, unreadMessages, { unreadCount: unreadMessages.length });
@@ -1130,7 +1127,7 @@ app.get('/userMessages/:username', async (req, res) => {
 
 
         //console.log("Messages read by admin")
-      //  console.log("Messages: ",messages)
+        //  console.log("Messages: ",messages)
         res.status(200).json(messages);
     } catch (error) {
         console.error('Error fetching messages:', error);
@@ -1139,52 +1136,50 @@ app.get('/userMessages/:username', async (req, res) => {
 });
 
 app.get('/userChatMessages/:username', async (req, res) => {
-     const sname  = req.session.userName
-        const   username   = req.params.username;
-        if(!sname){
-            return res.redirect('/signin')
-        }
-        else if(sname !== username)
-        {
-            return res.redirect("/signin")
-        }
-        
+    const sname = req.session.userName
+    const username = req.params.username;
+    if (!sname) {
+        return res.redirect('/signin')
+    }
+    else if (sname !== username) {
+        return res.redirect("/signin")
+    }
+
 
     //console.log("Username: ",username)
     try {
-        const user =  User.findOne({name: username })
+        const user = User.findOne({ name: username })
         {
-            if(!user)
-            {
+            if (!user) {
                 return res.status(404).send('User not found');
             }
         }
-        const adminUser = await User.findOne({role: "admin"})
+        const adminUser = await User.findOne({ role: "admin" })
         const presentTime = new Date()
         const loginTime = new Date(adminUser.lastLogin)
         const logoutTime = new Date(adminUser.lastLogout)
-        
+
         if (loginTime && logoutTime || loginTime) {
             delivered = loginTime > logoutTime && loginTime < presentTime;
         } else {
             console.log("No login and logout timings ")
         }
-        const unreadMessages = await Message.find({from: "admin", read : "false"})
+        const unreadMessages = await Message.find({ from: "admin", read: "false" })
         //console.log(unreadMessages)
         // Find all messages where the sender is the specified user and recipient is 'Admin'
         const messages = await Message.find({ $or: [{ from: username, to: 'admin' }, { from: 'admin', to: username }] });
 
-        if(username){
-           // console.log("Messages updated")
-        await Message.updateMany(
-            { from: "admin", to: username, read: false }, // Filter criteria: unread messages to 'username'
-            { $set: { read: true } }      // Update: set 'read' to true
-        );
-        io.emit('UserRead',username,unreadMessages)
-    }
+        if (username) {
+            // console.log("Messages updated")
+            await Message.updateMany(
+                { from: "admin", to: username, read: false }, // Filter criteria: unread messages to 'username'
+                { $set: { read: true } }      // Update: set 'read' to true
+            );
+            io.emit('UserRead', username, unreadMessages)
+        }
         //console.log(`Messages read by ${username}`)
-    
-      //  console.log("Messages: ",messages)
+
+        //  console.log("Messages: ",messages)
         res.status(200).json(messages);
     } catch (error) {
         console.error('Error fetching messages:', error);
@@ -1200,15 +1195,13 @@ app.get('/adminChat/:username', async (req, res) => {
 
     try {
         const admin = await User.findOne({ name: username });
-       console.log("admin: ", admin);
+        console.log("admin: ", admin);
         const sname = req.session.userName;
         console.log(sname)
-        if (!sname)
-        {
+        if (!sname) {
             return res.redirect('/signin')
         }
-        else if(sname !== admin.name)
-        {
+        else if (sname !== admin.name) {
             return res.redirect('/signin')
         }
         if (!admin) {
@@ -1229,15 +1222,15 @@ app.get('/adminChat/:username', async (req, res) => {
 
         // Fetch last messages for each user
         for (const user of users) {
-          //  console.log("User:",user.name)
-           // console.log("Admin: ",admin.name)
+            //  console.log("User:",user.name)
+            // console.log("Admin: ",admin.name)
             const lastMessage = await Message.findOne({
                 $or: [
                     { from: user.name, to: "admin" },
                     { from: "admin", to: user.name }
                 ]
             })
-            .sort({ timestamp: -1 });
+                .sort({ timestamp: -1 });
             //console.log("Last msg: ",lastMessage);
 
             // Example logic to count unread messages
@@ -1246,15 +1239,15 @@ app.get('/adminChat/:username', async (req, res) => {
                 to: "admin",
                 read: false  // Assuming there's a 'read' field in Message schema
             });
-            
-            
-          //  console.log(unreadMessagesCount)
+
+
+            //  console.log(unreadMessagesCount)
             usersWithLastMessages.push({
                 name: user.name,
                 status: user.status || 'Online',
                 unreadMessages: unreadMessagesCount === 0 ? null : unreadMessagesCount, // Update this as per your logic
                 read: lastMessage && lastMessage.read !== undefined ? lastMessage.read : null,
-                delivered : lastMessage && lastMessage.delivered !== undefined ? lastMessage.delivered : null,
+                delivered: lastMessage && lastMessage.delivered !== undefined ? lastMessage.delivered : null,
                 lastMessage: lastMessage ? {
                     content: decryptMessage(lastMessage.content),
                     timestamp: lastMessage.timestamp,
@@ -1274,11 +1267,11 @@ app.get('/adminChat/:username', async (req, res) => {
                 return 0; // both don't have messages
             }
         });
-       // console.log(usersWithLastMessages)
+        // console.log(usersWithLastMessages)
         // Render admin chat page with users and their last messages
         res.render('adminChat', {
             name: username,
-            users: usersWithLastMessages 
+            users: usersWithLastMessages
         });
 
     } catch (error) {
@@ -1288,7 +1281,7 @@ app.get('/adminChat/:username', async (req, res) => {
 });
 
 // Register a Handlebars helper to truncate message content
-hbs.registerHelper('truncateMessage', function(content, maxLength) {
+hbs.registerHelper('truncateMessage', function (content, maxLength) {
     if (content.length > maxLength) {
         return content.substring(0, maxLength) + '...';
     } else {
@@ -1296,14 +1289,13 @@ hbs.registerHelper('truncateMessage', function(content, maxLength) {
     }
 });
 // Assuming you have an instance of Handlebars named `hbs`
-hbs.registerHelper('isAdminMessage', function(sender) {
+hbs.registerHelper('isAdminMessage', function (sender) {
     //console.log("Sender: ",sender);
-    if (sender === 'admin')
-    {
+    if (sender === 'admin') {
         return true
     }
-    else{
-    return false
+    else {
+        return false
     }
 });
 
@@ -1312,56 +1304,56 @@ app.post("/tick", async (req, res) => {
         const { content, sender, recipient, timestamp } = req.body;
         const presentTime = new Date();
         const adminUser = await User.findOne({ role: "admin" });
-        
+
         console.log(`${encryptMessage(content)} ${sender} ${recipient} ${timestamp}`)
         let actualSender = sender;
         let actualRecipient = recipient;
-        
+
         // Adjust actualSender and actualRecipient if sender or recipient is 'admin'
         if (sender === "admin") {
             actualSender = adminUser.name;
-        } 
+        }
         if (recipient === "admin") {
             actualRecipient = adminUser.name;
         }
-        
+
         // Fetch recipient's login and logout times
         const recipientInfo = await User.findOne({ name: actualRecipient });
-        console.log(actualRecipient, "ko",recipientInfo)
+        console.log(actualRecipient, "ko", recipientInfo)
         if (!recipientInfo) {
-           console.log("one",actualRecipient)
+            console.log("one", actualRecipient)
             return res.status(404).json({ error: "Recipient not found" });
         }
-        
+
         const loginTime = recipientInfo.lastLogin ? new Date(recipientInfo.lastLogin) : null;
         const logoutTime = recipientInfo.lastLogout ? new Date(recipientInfo.lastLogout) : null;
-        
+
         // Check if the recipient has necessary login/logout times
         if (loginTime && !logoutTime) {
-           // console.log("false")
+            // console.log("false")
             return res.json({ delivered: false, read: false });
         }
-        
+
         // Find the message based on sender, recipient, content, and timestamp
         const msg = await Message.findOne({ from: sender, to: recipient, content: content, timestamp: timestamp });
-       // console.log("msg",msg)
+        // console.log("msg",msg)
         // If message not found, return 404 error
         if (!msg) {
             return res.status(404).json({ error: "Message not found" });
         }
-        
+
         // Update delivered status if necessary
         if (loginTime && logoutTime) {
-          //  console.log("iii",msg.delivered,msg.read)
-            if(msg.delivered=== false){
+            //  console.log("iii",msg.delivered,msg.read)
+            if (msg.delivered === false) {
                 msg.delivered = loginTime > logoutTime && loginTime < presentTime;
-            await msg.save();
+                await msg.save();
             }
         }
-        console.log(msg.delivered,msg.read)
+        console.log(msg.delivered, msg.read)
         // Return the delivery and read status of the message
         return res.json({ delivered: msg.delivered, read: msg.read });
-        
+
     } catch (err) {
         console.log("Error (delivery): ", err);
         return res.status(500).json({ error: "Internal Server Error" });
@@ -1409,8 +1401,7 @@ hbs.registerHelper('formatDate', function (dateStr) {
 app.get("/userChat/:name", async (req, res) => {
     const username = req.params.name;
     const sname = req.session.userName;
-    if(!username || ! sname ||(username !== sname))
-    {
+    if (!username || !sname || (username !== sname)) {
         return res.redirect('/signin')
     }
     try {
@@ -1421,7 +1412,7 @@ app.get("/userChat/:name", async (req, res) => {
             // Handle case where user is not found in the database
             return res.status(404).send('User not found');
         }
-        
+
         // Example logic to count unread messages
         const unreadMessagesCount = await Message.countDocuments({
             from: "admin",
@@ -1442,10 +1433,9 @@ app.get("/userChat/:name", async (req, res) => {
 });
 
 app.get('/users', async (req, res) => {
-    const username = await User.findOne({role: "admin"});
+    const username = await User.findOne({ role: "admin" });
     const sname = req.session.userName;
-    if(!username || ! sname ||(username.name !== sname))
-    {
+    if (!username || !sname || (username.name !== sname)) {
         return res.redirect('/signin')
     }
     try {
@@ -1461,14 +1451,14 @@ app.get('/users', async (req, res) => {
 
 app.get("/profile/:name", async (req, res) => {
     const uname = req.session.userName;
-    console.log(req.session.userName,"s",req.params.name)
+    console.log(req.session.userName, "s", req.params.name)
     if (!uname) {
-        
-           console.log("hi")
-            return res.redirect('/signin');
-        
+
+        console.log("hi")
+        return res.redirect('/signin');
+
     }
-    else if(uname !== req.params.name){
+    else if (uname !== req.params.name) {
         return res.redirect('/signin');
     }
     const name = req.params.name;
@@ -1481,29 +1471,29 @@ app.get("/profile/:name", async (req, res) => {
         if (!user) {
             return res.status(404).send('User not found');
         }
-         
+
         res.render('profile', { user });
 
     } catch (error) {
-            console.error('Error fetching user:', error);
-            res.status(500).send('Internal Server Error');
+        console.error('Error fetching user:', error);
+        res.status(500).send('Internal Server Error');
     }
 });
 
 // User route
 app.get('/dataUser/:name', async (req, res) => {
     const uname = req.session.userName;
-    console.log(req.session.userName,"s",req.params.name)
+    console.log(req.session.userName, "s", req.params.name)
     if (!uname) {
-        
-           console.log("hi")
-            return res.redirect('/signin');
-        
+
+        console.log("hi")
+        return res.redirect('/signin');
+
     }
-    else if(uname !== req.params.name){
+    else if (uname !== req.params.name) {
         return res.redirect('/signin');
     }
-   const name = req.params.name; // Assuming the user's name is passed as a query parameter
+    const name = req.params.name; // Assuming the user's name is passed as a query parameter
     if (!name) {
         return res.status(400).send('User name is required');
     }
@@ -1542,14 +1532,14 @@ app.get('/dataUser/:name', async (req, res) => {
                     lunch: getEntriesForMeal('lunch'),
                     supper: getEntriesForMeal('supper')
                 }
-            
+
             };
-            
+
         });
-           // console.log(groupedUser)
-            res.render('dataUser', { name: name ,groupedUser });
-        
-        
+        // console.log(groupedUser)
+        res.render('dataUser', { name: name, groupedUser });
+
+
     } catch (error) {
         console.error('Error fetching user:', error);
         res.status(500).send('Internal Server Error');
@@ -1609,9 +1599,9 @@ app.get('/logout', async (req, res) => {
 
 // in app.js (or similar)
 liveReloadServer.server.once("connection", () => {
-  setTimeout(() => {
-    liveReloadServer.refresh("/");
-  }, 100);
+    setTimeout(() => {
+        liveReloadServer.refresh("/");
+    }, 100);
 });
 
 server.listen(3000, () => {
